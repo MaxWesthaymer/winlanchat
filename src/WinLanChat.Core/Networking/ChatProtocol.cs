@@ -3,12 +3,16 @@ using System.Text.Json;
 
 namespace WinLanChat.Core.Networking;
 
-internal sealed record WireMessage(string Kind, int Version = 1, string? Name = null, string? Text = null);
+internal sealed record WireMessage(string Kind, int Version = 1, string? Name = null, string? Text = null,
+    Guid? TransferId = null, string? FileName = null, long? FileSize = null, byte[]? Data = null,
+    bool SupportsFiles = false);
 
 internal static class ChatProtocol
 {
     internal const int MaximumFrameBytes = 65_536;
     internal const int MaximumTextLength = 8_000;
+    internal const int FileChunkBytes = 32_768;
+    internal const long MaximumFileBytes = 1L << 40;
     private static readonly JsonSerializerOptions JsonOptions = new() { MaxDepth = 8 };
 
     internal static async Task WriteAsync(Stream stream, WireMessage message, CancellationToken cancellationToken)
@@ -40,4 +44,16 @@ internal static class ChatProtocol
 
     internal static bool IsValidText(string? text) =>
         !string.IsNullOrWhiteSpace(text) && text.Length <= MaximumTextLength;
+
+    internal static bool IsValidFileName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || name.Length > 255 || name is "." or ".."
+            || name.EndsWith('.') || name.EndsWith(' ')
+            || name.Any(c => char.IsControl(c) || "\\/:*?\"<>|".Contains(c)))
+            return false;
+        string stem = name.Split('.')[0].TrimEnd(' ').ToUpperInvariant();
+        return stem is not ("CON" or "PRN" or "AUX" or "NUL" or "CONIN$" or "CONOUT$")
+            && !(stem.Length == 4 && (stem.StartsWith("COM") || stem.StartsWith("LPT"))
+                && "123456789¹²³".Contains(stem[3]));
+    }
 }

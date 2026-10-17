@@ -6,7 +6,7 @@ using WinLanChat.Core.Models;
 namespace WinLanChat.Core.Networking;
 
 /// <summary>A TCP listener with one direct conversation at a time. Events arrive on worker threads.</summary>
-public sealed class ChatNode : IAsyncDisposable
+public sealed partial class ChatNode : IAsyncDisposable
 {
     public const int MaximumMessageLength = ChatProtocol.MaximumTextLength;
     private readonly string _name;
@@ -19,6 +19,7 @@ public sealed class ChatNode : IAsyncDisposable
     private TcpClient? _reservedClient;
     private TcpClient? _connectedClient;
     private bool _disposed;
+    private bool _peerSupportsFiles;
 
     public ChatNode(string name)
     {
@@ -30,6 +31,7 @@ public sealed class ChatNode : IAsyncDisposable
     public event Action<PeerInfo?>? ConnectionChanged;
     public event Action<string>? MessageReceived;
     public event Action<string>? Error;
+    public bool PeerSupportsFiles { get { lock (_sync) return _peerSupportsFiles; } }
     public int ListeningPort { get; private set; }
 
     public void Start(int port)
@@ -168,7 +170,7 @@ public sealed class ChatNode : IAsyncDisposable
     private async Task EstablishAsync(TcpClient client, CancellationToken cancellationToken)
     {
         NetworkStream stream = client.GetStream();
-        await ChatProtocol.WriteAsync(stream, new WireMessage("hello", Name: _name), cancellationToken).ConfigureAwait(false);
+        await ChatProtocol.WriteAsync(stream, new WireMessage("hello", Name: _name, SupportsFiles: true), cancellationToken).ConfigureAwait(false);
         WireMessage hello = await ChatProtocol.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
         if (hello.Kind != "hello" || hello.Version != 1 || !ChatProtocol.IsValidName(hello.Name))
             throw new InvalidDataException("Собеседник использует несовместимый протокол или недопустимое имя.");
@@ -176,6 +178,7 @@ public sealed class ChatNode : IAsyncDisposable
         {
             _shutdown.Token.ThrowIfCancellationRequested();
             _connectedClient = client;
+            _peerSupportsFiles = hello.SupportsFiles;
         }
         ConnectionChanged?.Invoke(new PeerInfo(hello.Name!, client.Client.RemoteEndPoint?.ToString() ?? "LAN"));
     }
@@ -188,9 +191,12 @@ public sealed class ChatNode : IAsyncDisposable
             while (!_shutdown.IsCancellationRequested)
             {
                 WireMessage message = await ChatProtocol.ReadAsync(stream, _shutdown.Token).ConfigureAwait(false);
-                if (message.Kind != "chat" || message.Version != 1 || !ChatProtocol.IsValidText(message.Text))
+                if (message.Version != 1)
                     throw new InvalidDataException("Получено недопустимое сообщение.");
-                MessageReceived?.Invoke(message.Text!);
+                if (message.Kind == "chat" && ChatProtocol.IsValidText(message.Text))
+                    MessageReceived?.Invoke(message.Text!);
+                else if (!await HandleFileMessageAsync(client, message).ConfigureAwait(false))
+                    throw new InvalidDataException("Получено недопустимое сообщение.");
             }
         }
         catch (EndOfStreamException) { }
@@ -199,7 +205,11 @@ public sealed class ChatNode : IAsyncDisposable
             if (!_shutdown.IsCancellationRequested && ex is not ObjectDisposedException)
                 Error?.Invoke("Соединение прервано: " + ex.Message);
         }
-        finally { Release(client); }
+        finally
+        {
+            Release(client);
+            await CloseFileTransfersAsync(client).ConfigureAwait(false);
+        }
     }
 
     private void Release(TcpClient client)

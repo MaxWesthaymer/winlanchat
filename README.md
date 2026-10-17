@@ -10,11 +10,12 @@ Windows LAN messenger built with C#, .NET 10 and WPF. No cloud or central server
 - Name and listening port can be changed in **Настройки** and applied without restarting the app. Applied settings are saved locally for the next launch.
 - One direct TCP conversation at a time; manual IP/hostname connection is available in the expandable settings.
 - Text messages in both directions, Unicode and multiline text, up to 8,000 characters.
+- One file attached to a message, with an optional text caption. Explicit acceptance, destination selection, progress, cancellation and partial-file cleanup.
 - Handshake validation, bounded protocol frames, connection timeout and cancellation.
 - Disconnect/reconnect and graceful shutdown.
 - No third-party NuGet packages.
 
-File transfer is **not implemented yet**. Message history is in memory only; a new connection starts a new conversation, and only the most recent 2,000 messages are retained. The current protocol has no encryption or peer authentication; displayed names are supplied by the remote computer.
+Message history is in memory only; a new connection starts a new conversation, and only the most recent 2,000 messages are retained. The current protocol has no encryption or peer authentication; displayed names are supplied by the remote computer.
 
 ## Requirements
 
@@ -37,6 +38,10 @@ dotnet run --project src/WinLanChat.App
 5. Type a message and press **Отправить** or **Enter**. **Shift+Enter** inserts a newline.
 6. Select text within a message and press **Ctrl+C** to copy it, or right-click and choose **Копировать**. **Ctrl+A** selects the entire message when its text has focus.
 7. Click an **http://**, **https://** or **www.** link in a message to open it in your default browser. Addresses beginning with **www.** open over HTTPS.
+8. Press **＋** beside the message input to attach a file. You can add a caption or leave the text empty, then press **Отправить**. Remove an unsent attachment with **✕**.
+9. Incoming files appear inside their messages. Press **Сохранить…** and choose a destination, or **Отклонить**. **Отменить передачу** cancels an outgoing offer or an active transfer. Chat stays available during transfers.
+
+Files travel in bounded 32 KiB chunks over the existing TCP connection. Both computers must run a version with file support; older versions can still exchange text. Up to 16 incoming and 16 outgoing offers/transfers are pending at once, with a maximum of 1 TiB per file. A transfer stalls out after 45 seconds without incoming file data or save confirmation. Files are written to a temporary file beside the approved destination and moved into place only after all declared bytes arrive. Existing destinations are replaced only after the Save dialog's overwrite confirmation; cancellation or disconnect preserves them and removes partial files. Files are never opened or executed automatically. Interrupted transfers cannot be resumed.
 
 Open **Настройки** to edit your name or listening port, then press **Применить изменения**. Finish the current connection before applying; editing a draft does not affect the active listener or discovery announcements. **Отменить изменения** restores the applied values. If a new port cannot be opened, the app attempts to restore the previous listener and does not save the failed settings. Settings are saved in `%LOCALAPPDATA%/WinLanChat/settings.json`; an unreadable or invalid file is reported and the app starts with defaults.
 
@@ -60,7 +65,7 @@ The dependency-free console runner executes real loopback networking checks and 
 dotnet run --project tests/WinLanChat.Tests
 ~~~
 
-Coverage: Unicode and maximum-size messages, concurrent sends, validation, busy-peer rejection, reconnect, handshake cancellation, malformed frames, port release on shutdown, discovery and connection through discovered endpoints, shared-port broadcasts, automatic refresh, duplicate/self suppression, departure/expiry, invalid discovery packets, refresh cancellation, automatic app startup, applying names and ports, unchanged live identity while editing, port-conflict recovery, saved settings, corrupt settings, cancelled writes, save retries, and WPF layout loading. This runner is invoked with dotnet run, not dotnet test.
+Coverage: Unicode and maximum-size messages, concurrent sends, file byte integrity and captions, empty files, file-only messages, bidirectional transfers alongside chat, explicit acceptance, rejection, cancellation from both ends, disconnect cleanup, safe filenames, malformed file frames, overwrite protection, WPF attachment commands and rendering, validation, busy-peer rejection, reconnect, handshake cancellation, malformed frames, port release on shutdown, discovery and connection through discovered endpoints, shared-port broadcasts, automatic refresh, duplicate/self suppression, departure/expiry, invalid discovery packets, refresh cancellation, automatic app startup, applying names and ports, unchanged live identity while editing, port-conflict recovery, saved settings, corrupt settings, cancelled writes, and save retries. This runner is invoked with dotnet run, not dotnet test.
 
 To save render previews while running the checks:
 
@@ -76,5 +81,4 @@ dotnet run --project tests/WinLanChat.Tests -- --preview artifacts/preview
 
 ## Next milestones
 
-1. File offers with explicit acceptance and destination selection; safe filenames, chunked transfer, progress, cancellation and incomplete-file cleanup.
-2. Local history, notifications and packaging.
+1. Local history, notifications and packaging.

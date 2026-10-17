@@ -11,6 +11,10 @@ var tests = new (string Name, Func<Task> Run)[]
     ("Message links preserve addresses and reject non-web protocols", MessageLinkChecks.ParsingAsync),
     ("Unicode messages in both directions and maximum message size", ExchangeAsync),
     ("Concurrent sends preserve complete frames", ConcurrentSendsAsync),
+    ("Files preserve bytes, captions, empty text and chat during bidirectional transfers", FileTransferChecks.ExchangeAsync),
+    ("File rejection, cancellation and disconnect preserve destinations and clean partial files", FileTransferChecks.RejectCancelAndDisconnectAsync),
+    ("File transfer rejects unsafe names, malformed offers and unapproved overwrites", FileTransferChecks.ValidateAsync),
+    ("Unsolicited, duplicate, oversized and incomplete files cannot replace destinations", FileTransferChecks.RejectInvalidPayloadsAsync),
     ("Invalid outgoing input does not break a conversation", ValidateInputAsync),
     ("A second connection is rejected without replacing the first", RejectSecondConnectionAsync),
     ("Disconnect and reconnect", ReconnectAsync),
@@ -22,7 +26,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("Discovery rejects invalid packets, updates identities and expires silent peers", DiscoveryChecks.ValidateAndExpireAsync),
     ("Discovery ignores itself, supports cancellation and releases the UDP port", DiscoveryChecks.SelfAndCancellationAsync),
     ("Profile settings persist, reject invalid files and survive cancelled saves", ProfileChecks.PersistenceAsync),
-    ("WPF startup, live profile changes, recovery, shutdown and layout", () => UiSmoke.RunAsync(args.Length == 2 && args[0] == "--preview" ? args[1] : null))
+    ("WPF attachments, empty captions, startup, profile changes, recovery, shutdown and layout", () => UiSmoke.RunAsync(args.Length == 2 && args[0] == "--preview" ? args[1] : null))
 };
 
 int failures = 0;
@@ -30,7 +34,7 @@ foreach (var (name, run) in tests)
 {
     try
     {
-        await run().WaitAsync(TimeSpan.FromSeconds(15));
+        await run().WaitAsync(TimeSpan.FromSeconds(name.StartsWith("WPF") ? 30 : 15));
         Console.WriteLine($"PASS  {name}");
     }
     catch (Exception ex)

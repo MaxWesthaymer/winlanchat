@@ -64,6 +64,11 @@ internal static class UiSmoke
                         viewModel.DisplayName += " — новое имя";
                         Render(content, 1100, 690, previewDirectory, "window-settings.png");
                         viewModel.ResetProfileCommand.Execute(null);
+                        await UiFileTransferChecks.RunAsync(window, filename =>
+                        {
+                            Render(content, 1100, 690, previewDirectory, filename);
+                            Render(content, 920, 570, previewDirectory, filename.Replace(".png", "-narrow.png"));
+                        });
                         await CheckStartupRecoveryAsync(application.Dispatcher);
                         await ProfileChecks.RunAsync(application.Dispatcher);
                         window.Close();

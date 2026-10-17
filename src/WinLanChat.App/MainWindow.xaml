@@ -298,7 +298,32 @@
                                                    Margin="0,0,0,5" TextTrimming="CharacterEllipsis"/>
                                         <controls:MessageTextBox behaviors:MessageLinks.Text="{Binding Text, Mode=OneWay}"
                                                      Style="{StaticResource MessageText}"
+                                                     Visibility="{Binding HasText, Converter={StaticResource BoolVisibility}}"
                                                      AutomationProperties.Name="Текст сообщения в переписке"/>
+                                        <Border Background="#18232D" CornerRadius="8" Padding="12" Margin="0,8,0,0"
+                                                Visibility="{Binding HasAttachment, Converter={StaticResource BoolVisibility}}">
+                                            <StackPanel DataContext="{Binding Attachment}" MinWidth="230" MaxWidth="450">
+                                                <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" FontSize="14"
+                                                           TextWrapping="Wrap" ToolTip="{Binding FileName}"/>
+                                                <TextBlock Text="{Binding FileSize}" FontSize="11" Foreground="#A9BFC5" Margin="0,4,0,0"/>
+                                                <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Height="4" Margin="0,10,0,2"
+                                                             Foreground="{StaticResource AccentBrush}" Background="#303B4F"
+                                                             Visibility="{Binding IsTransferring, Converter={StaticResource BoolVisibility}}"
+                                                             AutomationProperties.Name="Прогресс передачи файла"/>
+                                                <TextBlock Text="{Binding Status}" FontSize="12" Foreground="#B7CBD0"
+                                                           TextWrapping="Wrap" Margin="0,7,0,0"/>
+                                                <TextBlock Text="{Binding SavedLocation}" FontSize="11" Foreground="#A9BFC5"
+                                                           TextWrapping="Wrap" ToolTip="{Binding SavedLocation}"/>
+                                                <WrapPanel Margin="0,8,0,0" Visibility="{Binding CanAccept, Converter={StaticResource BoolVisibility}}">
+                                                    <Button Content="Сохранить…" Command="{Binding SaveCommand}" Padding="12,7"
+                                                            Style="{StaticResource AccentButton}" Margin="0,0,8,0"/>
+                                                    <Button Content="Отклонить" Command="{Binding RejectCommand}" Padding="12,7"/>
+                                                </WrapPanel>
+                                                <Button Content="Отменить передачу" Command="{Binding CancelCommand}" Padding="12,7"
+                                                        HorizontalAlignment="Left" Margin="0,8,0,0"
+                                                        Visibility="{Binding CanCancel, Converter={StaticResource BoolVisibility}}"/>
+                                            </StackPanel>
+                                        </Border>
                                         <TextBlock Text="{Binding Time}" FontSize="10" Foreground="#A9BFC5"
                                                    HorizontalAlignment="Right" Margin="0,6,0,0"/>
                                     </StackPanel>
@@ -309,19 +334,34 @@
                 </Grid>
 
                 <StackPanel Grid.Row="3" Margin="0,18,0,18">
+                    <Border Background="#222C3D" CornerRadius="8" Padding="12,8" Margin="0,0,0,8"
+                            Visibility="{Binding HasDraftAttachment, Converter={StaticResource BoolVisibility}}">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="✕" Command="{Binding RemoveAttachmentCommand}"
+                                    Padding="9,5" Margin="12,0,0,0" AutomationProperties.Name="Убрать прикреплённый файл"/>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding DraftAttachmentSize}" VerticalAlignment="Center"
+                                       Foreground="{StaticResource MutedBrush}" Margin="12,0,0,0" FontSize="12"/>
+                            <TextBlock Text="{Binding DraftAttachmentName}" TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding DraftAttachmentName}" VerticalAlignment="Center" FontSize="13"/>
+                        </DockPanel>
+                    </Border>
                     <Border Background="#1A2230" CornerRadius="12" BorderBrush="#303B4F" BorderThickness="1" Padding="12">
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConnected}"
+                            <Button Content="＋" FontSize="23" Command="{Binding AttachFileCommand}" Padding="10,4"
+                                    Background="Transparent" VerticalAlignment="Bottom" Margin="0,0,4,0"
+                                    ToolTip="Прикрепить файл" AutomationProperties.Name="Прикрепить файл"/>
+                            <TextBox Grid.Column="1" Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConnected}"
                                      behaviors:MessageInput.SendOnEnterCommand="{Binding SendCommand}"
                                      MaxLength="8000" AcceptsReturn="True" TextWrapping="Wrap"
                                      MinHeight="58" MaxHeight="150" VerticalScrollBarVisibility="Auto"
                                      Background="#1A2230" BorderBrush="#1A2230" Padding="8,8"
                                      AutomationProperties.Name="Текст сообщения"/>
-                            <Button Grid.Column="1" Content="Отправить  →" Command="{Binding SendCommand}"
+                            <Button Grid.Column="2" Content="Отправить  →" Command="{Binding SendCommand}"
                                     Style="{StaticResource AccentButton}" VerticalAlignment="Bottom" Margin="12,0,0,0"/>
                         </Grid>
                     </Border>
