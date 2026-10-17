@@ -5,9 +5,40 @@
         Title="WinLanChat" Width="1120" Height="780" MinWidth="920" MinHeight="680"
         Background="#10141D" Foreground="#EDF1F7" FontFamily="Segoe UI"
         WindowStartupLocation="CenterScreen" UseLayoutRounding="True" ThemeMode="Dark">
-    <Window.InputBindings>
-        <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding SendCommand}"/>
-    </Window.InputBindings>
+    <Window.Resources>
+        <Style x:Key="MessageText" TargetType="TextBox">
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="SelectionBrush" Value="#347F70"/>
+            <Setter Property="IsInactiveSelectionHighlightEnabled" Value="True"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <ScrollViewer x:Name="PART_ContentHost" Focusable="False"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ContextMenu">
+                <Setter.Value>
+                    <ContextMenu>
+                        <MenuItem Header="Копировать" Command="Copy"
+                                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                        <MenuItem Header="Выделить всё" Command="SelectAll"
+                                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                    </ContextMenu>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     <Grid Background="#10141D">
         <Grid.RowDefinitions>
             <RowDefinition Height="76"/>
@@ -265,7 +296,8 @@
                                     <StackPanel>
                                         <TextBlock Text="{Binding Author}" FontSize="11" Foreground="#A9BFC5"
                                                    Margin="0,0,0,5" TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="14" LineHeight="22"/>
+                                        <TextBox Text="{Binding Text, Mode=OneWay}" Style="{StaticResource MessageText}"
+                                                 TextBlock.LineHeight="22" AutomationProperties.Name="Текст сообщения в переписке"/>
                                         <TextBlock Text="{Binding Time}" FontSize="10" Foreground="#A9BFC5"
                                                    HorizontalAlignment="Right" Margin="0,6,0,0"/>
                                     </StackPanel>
@@ -283,6 +315,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConnected}"
+                                     behaviors:MessageInput.SendOnEnterCommand="{Binding SendCommand}"
                                      MaxLength="8000" AcceptsReturn="True" TextWrapping="Wrap"
                                      MinHeight="58" MaxHeight="150" VerticalScrollBarVisibility="Auto"
                                      Background="#1A2230" BorderBrush="#1A2230" Padding="8,8"
@@ -294,7 +327,7 @@
                     <DockPanel Margin="4,9,4,0">
                         <TextBlock DockPanel.Dock="Right" Text="{Binding DraftCounter}" FontSize="11"
                                    Foreground="{StaticResource MutedBrush}"/>
-                        <TextBlock Text="Ctrl + Enter — отправить   ·   Enter — новая строка"
+                        <TextBlock Text="Enter — отправить   ·   Shift + Enter — новая строка"
                                    FontSize="11" Foreground="{StaticResource MutedBrush}"/>
                     </DockPanel>
                 </StackPanel>

@@ -34,7 +34,8 @@ dotnet run --project src/WinLanChat.App
 2. Receiving messages and searching for computers start automatically, using your saved settings (your Windows user name and TCP port 45832 on first launch).
 3. If Windows asks about firewall access, allow the application on the private network.
 4. Computers running WinLanChat appear under **КОМПЬЮТЕРЫ В СЕТИ**. Select one and press **Подключиться**. Connecting from one side is sufficient. Press **Обновить список** to search immediately.
-5. Type a message and press **Отправить** or **Ctrl+Enter**. Enter inserts a newline.
+5. Type a message and press **Отправить** or **Enter**. **Shift+Enter** inserts a newline.
+6. Select text within a message and press **Ctrl+C** to copy it, or right-click and choose **Копировать**. **Ctrl+A** selects the entire message when its text has focus.
 
 Open **Настройки** to edit your name or listening port, then press **Применить изменения**. Finish the current connection before applying; editing a draft does not affect the active listener or discovery announcements. **Отменить изменения** restores the applied values. If a new port cannot be opened, the app attempts to restore the previous listener and does not save the failed settings. Settings are saved in `%LOCALAPPDATA%/WinLanChat/settings.json`; an unreadable or invalid file is reported and the app starts with defaults.
 
