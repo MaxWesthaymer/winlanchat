@@ -45,6 +45,14 @@ internal static class UiSmoke
 
                         var content = (FrameworkElement)window.Content;
                         Render(content, 920, 570, previewDirectory, "window-empty.png");
+                        viewModel.Messages.Add(new ChatMessage("MaxHome", "https://ipmsg.org/", false, DateTimeOffset.Now));
+                        viewModel.Messages.Add(new ChatMessage("Вы", "жж", true, DateTimeOffset.Now));
+                        viewModel.Messages.Add(new ChatMessage("Вы", "вав", true, DateTimeOffset.Now));
+                        Render(content, 1100, 690, previewDirectory, "window-compact-messages.png");
+                        MessageLinkChecks.CheckCompactBubbles(content);
+                        Render(content, 920, 570, previewDirectory, "window-compact-messages-narrow.png");
+                        MessageLinkChecks.CheckCompactBubbles(content);
+                        viewModel.Messages.Clear();
                         viewModel.Peers.Add(new DiscoveredPeer(Guid.NewGuid(), "Анна", "DESKTOP-ANNA", "192.168.1.21", 45832));
                         viewModel.Peers.Add(new DiscoveredPeer(Guid.NewGuid(), "Борис — рабочий компьютер", "OFFICE-PC", "192.168.1.22", 45832));
                         viewModel.SelectedPeer = viewModel.Peers[0];

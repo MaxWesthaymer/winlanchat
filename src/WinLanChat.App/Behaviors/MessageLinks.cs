@@ -11,7 +11,7 @@ public static class MessageLinks
 {
     public static readonly DependencyProperty TextProperty =
         DependencyProperty.RegisterAttached("Text", typeof(string), typeof(MessageLinks),
-            new PropertyMetadata("", OnTextChanged));
+            new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.AffectsMeasure, OnTextChanged));
 
     public static string GetText(DependencyObject target) => (string)target.GetValue(TextProperty);
     public static void SetText(DependencyObject target, string value) => target.SetValue(TextProperty, value);

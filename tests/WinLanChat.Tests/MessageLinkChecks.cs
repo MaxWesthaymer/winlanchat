@@ -2,7 +2,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using WinLanChat.App.Behaviors;
+using WinLanChat.App.Controls;
 using WinLanChat.App.Services;
 
 internal static class MessageLinkChecks
@@ -45,7 +47,7 @@ internal static class MessageLinkChecks
     internal static void CheckRendering(Window window)
     {
         const string text = "Текст <b>без разметки</b> https://example.com/path?q=1&b=2.\nВторая строка www.example.org";
-        var view = new RichTextBox { Style = (Style)window.FindResource("MessageText") };
+        var view = new MessageTextBox { Style = (Style)window.FindResource("MessageText") };
         MessageLinks.SetText(view, text);
         view.ApplyTemplate();
         view.Measure(new Size(300, 500));
@@ -64,5 +66,59 @@ internal static class MessageLinkChecks
         MessageLinks.SetText(view, "Обычный текст");
         if (((Paragraph)view.Document.Blocks.Single()).Inlines.OfType<Hyperlink>().Any())
             throw new Exception("Reusing a message view retained stale links.");
+
+        MessageLinks.SetText(view, "жж");
+        view.Measure(new Size(488, double.PositiveInfinity));
+        double shortWidth = view.DesiredSize.Width;
+        if (shortWidth >= 80)
+            throw new Exception("A short message stretches to the maximum bubble width.");
+
+        MessageLinks.SetText(view, "https://ipmsg.org/");
+        view.Measure(new Size(488, double.PositiveInfinity));
+        if (view.DesiredSize.Width <= shortWidth || view.DesiredSize.Width >= 250)
+            throw new Exception($"A link does not size the message bubble to its content: short={shortWidth}, link={view.DesiredSize.Width}.");
+
+        MessageLinks.SetText(view, "Первая строка\nВторая строка подлиннее");
+        view.Measure(new Size(488, double.PositiveInfinity));
+        if (view.DesiredSize.Width >= 300 || view.DesiredSize.Height < 40)
+            throw new Exception($"A multiline message does not retain its natural dimensions: {view.DesiredSize}.");
+
+        MessageLinks.SetText(view, new string('Ж', 200));
+        view.Measure(new Size(488, double.PositiveInfinity));
+        double wideHeight = view.DesiredSize.Height;
+        view.Measure(new Size(180, double.PositiveInfinity));
+        if (view.DesiredSize.Width > 180 || view.DesiredSize.Height <= wideHeight)
+            throw new Exception("Long messages do not wrap when the available width shrinks.");
+
+        MessageLinks.SetText(view, "жж");
+        view.Measure(new Size(488, double.PositiveInfinity));
+        if (Math.Abs(view.DesiredSize.Width - shortWidth) > 1)
+            throw new Exception("A recycled message view does not shrink back to short text.");
+    }
+
+    internal static void CheckCompactBubbles(DependencyObject root)
+    {
+        var views = Descendants(root).OfType<MessageTextBox>().ToArray();
+        if (views.Length != 3)
+            throw new Exception("The compact bubble layout did not realize all sample messages.");
+        foreach (var view in views)
+        {
+            DependencyObject parent = view;
+            while (parent is not Border)
+                parent = VisualTreeHelper.GetParent(parent);
+            if (((Border)parent).ActualWidth >= 250)
+                throw new Exception("A short incoming or outgoing bubble stretched in the conversation list.");
+        }
+    }
+
+    private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            yield return child;
+            foreach (var descendant in Descendants(child))
+                yield return descendant;
+        }
     }
 }
