@@ -1,0 +1,245 @@
+<Window x:Class="WinLanChat.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:behaviors="clr-namespace:WinLanChat.App.Behaviors"
+        Title="WinLanChat" Width="1120" Height="780" MinWidth="920" MinHeight="680"
+        Background="#10141D" Foreground="#EDF1F7" FontFamily="Segoe UI"
+        WindowStartupLocation="CenterScreen" UseLayoutRounding="True" ThemeMode="Dark">
+    <Window.InputBindings>
+        <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding SendCommand}"/>
+    </Window.InputBindings>
+    <Grid Background="#10141D">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="76"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="34"/>
+        </Grid.RowDefinitions>
+        <Border BorderBrush="#283142" BorderThickness="0,0,0,1" Background="#171D29" Padding="26,0">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="38" Height="38" CornerRadius="11" Background="#67DFC2" Margin="0,0,12,0">
+                        <TextBlock Text="W" Foreground="#10241F" FontSize="22" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="WinLanChat" FontSize="20" FontWeight="SemiBold"/>
+                        <TextBlock Text="Общение в вашей локальной сети" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+                <Border HorizontalAlignment="Right" VerticalAlignment="Center" Background="#222D3C"
+                        CornerRadius="14" Padding="12,6">
+                    <TextBlock Text="Прямое подключение" Foreground="#B9C7DA" FontSize="12"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="#171D29" BorderBrush="#283142" BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="22,24">
+                        <TextBlock Text="ВАШ КОМПЬЮТЕР" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{StaticResource MutedBrush}" Margin="0,0,0,18"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="78"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Имя в чате" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" MaxLength="64"
+                                         IsEnabled="{Binding CanEditProfile}" AutomationProperties.Name="Имя в чате"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Порт приёма" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding LocalPort, UpdateSourceTrigger=PropertyChanged}" MaxLength="5"
+                                         IsEnabled="{Binding CanEditProfile}" AutomationProperties.Name="Порт приёма"/>
+                            </StackPanel>
+                        </Grid>
+                        <Button Content="Начать работу" Command="{Binding StartCommand}"
+                                Style="{StaticResource AccentButton}" Margin="0,14,0,0"/>
+                        <Border Background="#10151F" CornerRadius="8" Padding="12" Margin="0,14,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Ваш адрес" FontSize="11" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="{Binding LocalAddresses}" TextWrapping="Wrap" FontSize="12" LineHeight="18"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Height="1" Background="#2B3445" Margin="0,18"/>
+                        <TextBlock Text="ПОДКЛЮЧЕНИЕ ПО IP" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{StaticResource MutedBrush}" Margin="0,0,0,18"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="78"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Адрес собеседника" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding RemoteHost, UpdateSourceTrigger=PropertyChanged}" MaxLength="253"
+                                         IsEnabled="{Binding CanEditConnection}" AutomationProperties.Name="Адрес собеседника"
+                                         ToolTip="Например: 192.168.1.25"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Порт" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding RemotePort, UpdateSourceTrigger=PropertyChanged}" MaxLength="5"
+                                         IsEnabled="{Binding CanEditConnection}" AutomationProperties.Name="Порт собеседника"/>
+                            </StackPanel>
+                        </Grid>
+                        <Button Content="Подключиться" Command="{Binding ConnectCommand}" Margin="0,14,0,0"/>
+                        <Button Content="Отменить подключение" Command="{Binding CancelConnectCommand}" Margin="0,8,0,0"
+                                Visibility="{Binding IsConnecting, Converter={StaticResource BoolVisibility}}"/>
+                        <TextBlock Text="Запустите приём на обоих компьютерах. Затем укажите адрес второго компьютера и подключитесь с одной стороны."
+                                   TextWrapping="Wrap" FontSize="12" LineHeight="19"
+                                   Foreground="{StaticResource MutedBrush}" Margin="0,18,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <Grid Grid.Column="1" Margin="28,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="90"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                        <TextBlock Text="{Binding PeerName}" FontSize="20" FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding PeerAddress}" Foreground="{StaticResource MutedBrush}"
+                                   FontSize="12" Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Отключиться" Command="{Binding DisconnectCommand}"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsConnected, Converter={StaticResource BoolVisibility}}"/>
+                </Grid>
+
+                <Border Grid.Row="1" Background="#3C262D" BorderBrush="#78434F" BorderThickness="1"
+                        CornerRadius="8" Padding="12" Margin="0,0,0,12"
+                        Visibility="{Binding HasError, Converter={StaticResource BoolVisibility}}">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="✕" Command="{Binding DismissErrorCommand}"
+                                Padding="8,4" Background="Transparent" Margin="8,0,0,0"
+                                AutomationProperties.Name="Закрыть сообщение об ошибке"/>
+                        <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Foreground="#F4BEC8"
+                                   VerticalAlignment="Center" FontSize="13"/>
+                    </DockPanel>
+                </Border>
+
+                <Grid Grid.Row="2">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="390" Margin="24">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Messages.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Border Width="72" Height="72" Background="#1D3033" CornerRadius="22" Margin="0,0,0,22">
+                            <TextBlock Text="↔" FontSize="38" Foreground="#67DFC2"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Разговор начинается здесь" FontSize="23" FontWeight="SemiBold"
+                                   TextAlignment="Center" TextWrapping="Wrap"/>
+                        <TextBlock Text="Подключите два компьютера в одной сети и отправьте первое сообщение."
+                                   TextAlignment="Center" TextWrapping="Wrap" FontSize="14" LineHeight="23"
+                                   Foreground="{StaticResource MutedBrush}" Margin="0,12,0,0"/>
+                    </StackPanel>
+                    <ListBox ItemsSource="{Binding Messages}" Background="Transparent" BorderThickness="0"
+                             behaviors:ChatScroll.FollowMessages="True"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.CanContentScroll="True"
+                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                             AutomationProperties.Name="Переписка">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,0,8,14"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <ContentPresenter/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="16,12" CornerRadius="12" MaxWidth="520">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#222C3D"/>
+                                            <Setter Property="HorizontalAlignment" Value="Left"/>
+                                            <Setter Property="Margin" Value="0,0,42,0"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsOutgoing}" Value="True">
+                                                    <Setter Property="Background" Value="#21483F"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                                    <Setter Property="Margin" Value="42,0,0,0"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Author}" FontSize="11" Foreground="#A9BFC5"
+                                                   Margin="0,0,0,5" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="14" LineHeight="22"/>
+                                        <TextBlock Text="{Binding Time}" FontSize="10" Foreground="#A9BFC5"
+                                                   HorizontalAlignment="Right" Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+
+                <StackPanel Grid.Row="3" Margin="0,18,0,18">
+                    <Border Background="#1A2230" CornerRadius="12" BorderBrush="#303B4F" BorderThickness="1" Padding="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConnected}"
+                                     MaxLength="8000" AcceptsReturn="True" TextWrapping="Wrap"
+                                     MinHeight="58" MaxHeight="150" VerticalScrollBarVisibility="Auto"
+                                     Background="#1A2230" BorderBrush="#1A2230" Padding="8,8"
+                                     AutomationProperties.Name="Текст сообщения"/>
+                            <Button Grid.Column="1" Content="Отправить  →" Command="{Binding SendCommand}"
+                                    Style="{StaticResource AccentButton}" VerticalAlignment="Bottom" Margin="12,0,0,0"/>
+                        </Grid>
+                    </Border>
+                    <DockPanel Margin="4,9,4,0">
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding DraftCounter}" FontSize="11"
+                                   Foreground="{StaticResource MutedBrush}"/>
+                        <TextBlock Text="Ctrl + Enter — отправить   ·   Enter — новая строка"
+                                   FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+                    </DockPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="2" BorderBrush="#283142" BorderThickness="0,1,0,0" Padding="24,0">
+            <DockPanel VerticalAlignment="Center">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding ConnectionLabel}" FontSize="11"
+                           Foreground="{StaticResource AccentBrush}"/>
+                <TextBlock Text="{Binding Status}" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>
