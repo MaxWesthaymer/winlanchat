@@ -8,6 +8,7 @@ using WinLanChat.Core.Networking;
 
 var tests = new (string Name, Func<Task> Run)[]
 {
+    ("Message links preserve addresses and reject non-web protocols", MessageLinkChecks.ParsingAsync),
     ("Unicode messages in both directions and maximum message size", ExchangeAsync),
     ("Concurrent sends preserve complete frames", ConcurrentSendsAsync),
     ("Invalid outgoing input does not break a conversation", ValidateInputAsync),

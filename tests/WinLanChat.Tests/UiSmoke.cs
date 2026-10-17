@@ -26,6 +26,7 @@ internal static class UiSmoke
                     {
                         var window = (WinLanChat.App.MainWindow)application.MainWindow;
                         var viewModel = (MainViewModel)window.DataContext;
+                        MessageLinkChecks.CheckRendering(window);
                         // Exercise the actual application lifecycle without a start command.
                         await WaitUntilAsync(() => viewModel.IsListening || viewModel.HasError);
                         if (!viewModel.IsListening)
@@ -48,7 +49,7 @@ internal static class UiSmoke
                         viewModel.Peers.Add(new DiscoveredPeer(Guid.NewGuid(), "Борис — рабочий компьютер", "OFFICE-PC", "192.168.1.22", 45832));
                         viewModel.SelectedPeer = viewModel.Peers[0];
                         viewModel.Messages.Add(new ChatMessage("Компьютер Б", "Привет! Проверяем связь в локальной сети. 👋", false, DateTimeOffset.Now));
-                        viewModel.Messages.Add(new ChatMessage("Вы", "Привет! Всё работает.\nЭто сообщение в несколько строк.", true, DateTimeOffset.Now));
+                        viewModel.Messages.Add(new ChatMessage("Вы", "Привет! Всё работает.\nСсылка: https://example.com/help?q=1\nЕщё сайт: www.example.org.", true, DateTimeOffset.Now));
                         viewModel.Messages.Add(new ChatMessage("Компьютер Б", new string('Ж', 200), false, DateTimeOffset.Now));
                         Render(content, 1100, 690, previewDirectory, "window-conversation.png");
                         viewModel.IsSettingsOpen = true;
