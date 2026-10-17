@@ -4,6 +4,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WinLanChat.App.Models;
 using WinLanChat.App.ViewModels;
+using WinLanChat.Core.Models;
 
 internal static class UiSmoke
 {
@@ -20,6 +21,9 @@ internal static class UiSmoke
                 var window = new WinLanChat.App.MainWindow { DataContext = viewModel };
                 var content = (FrameworkElement)window.Content;
                 Render(content, 920, 570, previewDirectory, "window-empty.png");
+                viewModel.Peers.Add(new DiscoveredPeer(Guid.NewGuid(), "Анна", "DESKTOP-ANNA", "192.168.1.21", 45832));
+                viewModel.Peers.Add(new DiscoveredPeer(Guid.NewGuid(), "Борис — рабочий компьютер", "OFFICE-PC", "192.168.1.22", 45832));
+                viewModel.SelectedPeer = viewModel.Peers[0];
                 viewModel.Messages.Add(new ChatMessage("Компьютер Б", "Привет! Проверяем связь в локальной сети. 👋", false, DateTimeOffset.Now));
                 viewModel.Messages.Add(new ChatMessage("Вы", "Привет! Всё работает.\nЭто сообщение в несколько строк.", true, DateTimeOffset.Now));
                 viewModel.Messages.Add(new ChatMessage("Компьютер Б", new string('Ж', 200), false, DateTimeOffset.Now));

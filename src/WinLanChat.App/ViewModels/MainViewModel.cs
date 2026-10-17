@@ -15,6 +15,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _connecting;
     private ChatNode? _node;
+    private PeerDiscovery? _discovery;
+    private DiscoveredPeer? _selectedPeer;
+    private bool _isRefreshing;
     private string _displayName = Environment.UserName;
     private string _localPort = "45832";
     private string _remoteHost = "";
@@ -35,6 +38,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         StartCommand = new AsyncCommand(StartAsync, ReportError, () => !IsListening);
         ConnectCommand = new AsyncCommand(ConnectAsync, ReportError,
             () => IsListening && !IsConnected && !IsConnecting && !string.IsNullOrWhiteSpace(RemoteHost));
+        ConnectSelectedCommand = new AsyncCommand(ConnectSelectedAsync, ReportError,
+            () => IsListening && CanEditConnection && SelectedPeer is not null);
+        RefreshPeersCommand = new AsyncCommand(RefreshPeersAsync, ReportError, () => IsListening && !IsRefreshing);
         SendCommand = new AsyncCommand(SendAsync, ReportError,
             () => IsConnected && !string.IsNullOrWhiteSpace(Draft) && Draft.Length <= ChatNode.MaximumMessageLength);
         DisconnectCommand = new RelayCommand(() => _node?.Disconnect(), () => IsConnected);
@@ -43,8 +49,32 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     }
 
     public ObservableCollection<ChatMessage> Messages { get; } = [];
+    public ObservableCollection<DiscoveredPeer> Peers { get; } = [];
     public AsyncCommand StartCommand { get; }
     public AsyncCommand ConnectCommand { get; }
+    public AsyncCommand ConnectSelectedCommand { get; }
+    public AsyncCommand RefreshPeersCommand { get; }
+    public DiscoveredPeer? SelectedPeer
+    {
+        get => _selectedPeer;
+        set { if (Set(ref _selectedPeer, value)) RefreshCommands(); }
+    }
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        private set
+        {
+            if (Set(ref _isRefreshing, value))
+            {
+                OnPropertyChanged(nameof(DiscoveryStatus));
+                RefreshCommands();
+            }
+        }
+    }
+    public string DiscoveryStatus => !IsListening ? "Нажмите «Начать работу» для поиска."
+        : IsRefreshing ? "Поиск компьютеров…"
+        : Peers.Count == 0 ? "Пока никого нет. Запустите WinLanChat на другом ПК в этой сети."
+        : $"Найдено: {Peers.Count}. Список обновляется автоматически.";
     public AsyncCommand SendCommand { get; }
     public RelayCommand DisconnectCommand { get; }
     public RelayCommand CancelConnectCommand { get; }
@@ -90,6 +120,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             if (Set(ref _isListening, value))
             {
                 OnPropertyChanged(nameof(CanEditProfile));
+                OnPropertyChanged(nameof(DiscoveryStatus));
                 RefreshCommands();
             }
         }
@@ -110,7 +141,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public bool IsConnected => _peer is not null;
     public bool CanEditConnection => !IsConnecting && !IsConnected;
     public string PeerName => _peer?.Name ?? "Ваш следующий разговор";
-    public string PeerAddress => _peer?.Address ?? "Подключитесь к компьютеру в локальной сети";
+    public string PeerAddress => _peer?.Address ?? "Выберите компьютер в списке слева";
     public string ConnectionLabel => IsConnected ? "На связи" : "Нет подключения";
 
     private async Task StartAsync()
@@ -142,19 +173,83 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 : $"{list}  •  порт {port}";
         }
         catch (SocketException) { LocalAddresses = $"Не удалось определить LAN-адрес. Порт {port}."; }
+        if (!_closed)
+            await RefreshPeersAsync();
     }
 
-    private async Task ConnectAsync()
+    private async Task RefreshPeersAsync()
+    {
+        if (_node is null || IsRefreshing || _closed)
+            return;
+        ErrorMessage = "";
+        IsRefreshing = true;
+        try
+        {
+            if (_discovery is null)
+            {
+                var discovery = new PeerDiscovery(DisplayName.Trim(), _node.ListeningPort);
+                discovery.PeersChanged += OnPeersChanged;
+                discovery.Error += OnNetworkError;
+                try { discovery.Start(); }
+                catch
+                {
+                    await discovery.DisposeAsync();
+                    throw;
+                }
+                _discovery = discovery;
+            }
+            await _discovery.RefreshAsync(_lifetime.Token);
+            await Task.Delay(TimeSpan.FromSeconds(1), _lifetime.Token);
+        }
+        catch (Exception ex) when (ex is SocketException or System.Net.NetworkInformation.NetworkInformationException)
+        {
+            ErrorMessage = $"Поиск компьютеров недоступен: {ex.Message}. Проверьте доступ UDP {PeerDiscovery.DiscoveryPort} в брандмауэре.";
+        }
+        finally { IsRefreshing = false; }
+    }
+
+    private void OnPeersChanged(IReadOnlyList<DiscoveredPeer> peers) => Post(() =>
+    {
+        Guid? selectedId = SelectedPeer?.Id;
+        // Preserve list items and selection when only another participant changes.
+        for (int i = Peers.Count - 1; i >= 0; i--)
+            if (!peers.Any(p => p.Id == Peers[i].Id))
+                Peers.RemoveAt(i);
+        for (int i = 0; i < peers.Count; i++)
+        {
+            int existing = Peers.ToList().FindIndex(p => p.Id == peers[i].Id);
+            if (existing < 0)
+                Peers.Insert(i, peers[i]);
+            else
+            {
+                if (Peers[existing] != peers[i])
+                    Peers[existing] = peers[i];
+                if (existing != i)
+                    Peers.Move(existing, i);
+            }
+        }
+        SelectedPeer = Peers.FirstOrDefault(p => p.Id == selectedId);
+        OnPropertyChanged(nameof(DiscoveryStatus));
+    });
+
+    private Task ConnectSelectedAsync()
+    {
+        DiscoveredPeer? peer = SelectedPeer;
+        return peer is null ? Task.CompletedTask : ConnectToAsync(peer.Host, peer.Port);
+    }
+
+    private Task ConnectAsync() => ConnectToAsync(RemoteHost.Trim(), ParsePort(RemotePort));
+
+    private async Task ConnectToAsync(string host, int port)
     {
         if (_node is null)
             return;
-        int port = ParsePort(RemotePort);
         ErrorMessage = "";
         IsConnecting = true;
         Status = "Подключение…";
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
         _connecting = cancellation;
-        try { await _node.ConnectAsync(RemoteHost.Trim(), port, cancellation.Token); }
+        try { await _node.ConnectAsync(host, port, cancellation.Token); }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested && !_lifetime.IsCancellationRequested)
         {
             ErrorMessage = "Подключение отменено.";
@@ -249,6 +344,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     {
         StartCommand.Refresh();
         ConnectCommand.Refresh();
+        ConnectSelectedCommand.Refresh();
+        RefreshPeersCommand.Refresh();
         SendCommand.Refresh();
         DisconnectCommand.Refresh();
         CancelConnectCommand.Refresh();
@@ -260,6 +357,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             return;
         _closed = true;
         _lifetime.Cancel();
+        if (_discovery is not null)
+        {
+            _discovery.PeersChanged -= OnPeersChanged;
+            _discovery.Error -= OnNetworkError;
+            await _discovery.DisposeAsync();
+        }
         if (_node is not null)
         {
             _node.ConnectionChanged -= OnConnectionChanged;

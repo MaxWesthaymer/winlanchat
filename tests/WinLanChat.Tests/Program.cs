@@ -16,6 +16,10 @@ var tests = new (string Name, Func<Task> Run)[]
     ("Cancelling handshake releases the connection slot", CancelHandshakeAsync),
     ("Oversized, negative and malformed frames are rejected", RejectMalformedFramesAsync),
     ("Shutdown closes an incomplete handshake and releases the port", ShutdownAsync),
+    ("Discovery finds endpoints, connects and removes departing peers", DiscoveryChecks.DiscoverAndConnectAsync),
+    ("Broadcast discovery shares a UDP port, updates automatically and keeps identities distinct", DiscoveryChecks.SharedPortBroadcastAsync),
+    ("Discovery rejects invalid packets, updates identities and expires silent peers", DiscoveryChecks.ValidateAndExpireAsync),
+    ("Discovery ignores itself, supports cancellation and releases the UDP port", DiscoveryChecks.SelfAndCancellationAsync),
     ("WPF resources, bindings and layout render successfully", () => UiSmoke.RunAsync(args.Length == 2 && args[0] == "--preview" ? args[1] : null))
 };
 

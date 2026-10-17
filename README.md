@@ -5,13 +5,14 @@ Windows LAN messenger built with C#, .NET 10 and WPF. No cloud or central server
 ## Current milestone
 
 - Dark WPF interface with MVVM and a virtualized conversation list.
-- One direct TCP conversation at a time, connected manually by IP address or hostname.
+- Automatic IPv4 LAN discovery with a computer list, selection and a refresh button.
+- One direct TCP conversation at a time; manual IP/hostname connection is available in the expandable settings.
 - Text messages in both directions, Unicode and multiline text, up to 8,000 characters.
 - Handshake validation, bounded protocol frames, connection timeout and cancellation.
 - Disconnect/reconnect and graceful shutdown.
 - No third-party NuGet packages.
 
-Automatic peer discovery and file transfer are **not implemented yet**. Message history is in memory only; a new connection starts a new conversation, and only the most recent 2,000 messages are retained. The current protocol has no encryption or peer authentication; displayed names are supplied by the remote computer.
+File transfer is **not implemented yet**. Message history is in memory only; a new connection starts a new conversation, and only the most recent 2,000 messages are retained. The current protocol has no encryption or peer authentication; displayed names are supplied by the remote computer.
 
 ## Requirements
 
@@ -30,10 +31,20 @@ dotnet run --project src/WinLanChat.App
 1. Run the application on both computers in the same LAN.
 2. Enter a name and press **Начать работу** on each computer.
 3. If Windows asks about firewall access, allow the application on the private network.
-4. On one computer, enter the other computer's displayed IPv4 address and listening port (default: 45832), then press **Подключиться**. Connecting from one side is sufficient.
+4. Computers running WinLanChat appear under **КОМПЬЮТЕРЫ В СЕТИ**. Select one and press **Подключиться**. Connecting from one side is sufficient. Press **Обновить список** to search immediately.
 5. Type a message and press **Отправить** or **Ctrl+Enter**. Enter inserts a newline.
 
-To test two instances on one computer, set their listening ports to 45832 and 45833. Connect one to 127.0.0.1 and the other instance's port.
+To test two instances on one computer, set their listening ports to 45832 and 45833. They share the discovery port and appear separately in the list, even with identical names. Manual connection is also available under **Подключение по IP вручную**.
+
+## Peer discovery
+
+Discovery uses application-specific UDP broadcasts on port **45831**; chat uses TCP **45832** by default (or the configured listening port). Allow inbound UDP 45831 and the selected TCP port for this app on the Windows private network profile. No firewall settings are changed automatically.
+
+Only computers with WinLanChat running and **Начать работу** pressed are listed. This is not a scan of all Windows computers and does not implement IP Messenger's wire protocol. Peers announce every 10 seconds; silent peers expire after about 35 seconds. Normal shutdown sends a departure announcement. Refresh sends an immediate discovery query without interrupting the current conversation.
+
+Each running instance has a session identifier, so repeated announcements do not create duplicate rows and identical user/computer names remain separate. Discovery validates bounded packets, protocol versions, names and TCP ports; the connection address is taken from the UDP sender, not an advertised host field. Up to 1,024 participants are kept in memory. Peer names and presence are untrusted and unauthenticated.
+
+Broadcasts target active IPv4 adapter subnets and loopback for local testing. Discovery is limited to the local broadcast network: routers, guest Wi-Fi isolation, VPNs or firewall rules may block it. IPv6 discovery and discovery across routed subnets are not implemented; use the manual connection option where needed.
 
 ## Verification
 
@@ -43,7 +54,7 @@ The dependency-free console runner executes real loopback networking checks and 
 dotnet run --project tests/WinLanChat.Tests
 ~~~
 
-Coverage: Unicode and maximum-size messages, concurrent sends, validation, busy-peer rejection, reconnect, handshake cancellation, malformed frames and port release on shutdown, and WPF layout loading. This runner is invoked with dotnet run, not dotnet test.
+Coverage: Unicode and maximum-size messages, concurrent sends, validation, busy-peer rejection, reconnect, handshake cancellation, malformed frames, port release on shutdown, discovery and connection through discovered endpoints, shared-port broadcasts, automatic refresh, duplicate/self suppression, departure/expiry, invalid discovery packets, refresh cancellation, and WPF layout loading. This runner is invoked with dotnet run, not dotnet test.
 
 To save render previews while running the checks:
 
@@ -59,6 +70,5 @@ dotnet run --project tests/WinLanChat.Tests -- --preview artifacts/preview
 
 ## Next milestones
 
-1. UDP discovery with stable peer identifiers, expiry and duplicate handling.
-2. File offers with explicit acceptance and destination selection; safe filenames, chunked transfer, progress, cancellation and incomplete-file cleanup.
-3. Local history, notifications and packaging.
+1. File offers with explicit acceptance and destination selection; safe filenames, chunked transfer, progress, cancellation and incomplete-file cleanup.
+2. Local history, notifications and packaging.
