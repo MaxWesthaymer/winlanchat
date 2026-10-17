@@ -20,7 +20,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("Broadcast discovery shares a UDP port, updates automatically and keeps identities distinct", DiscoveryChecks.SharedPortBroadcastAsync),
     ("Discovery rejects invalid packets, updates identities and expires silent peers", DiscoveryChecks.ValidateAndExpireAsync),
     ("Discovery ignores itself, supports cancellation and releases the UDP port", DiscoveryChecks.SelfAndCancellationAsync),
-    ("WPF resources, bindings and layout render successfully", () => UiSmoke.RunAsync(args.Length == 2 && args[0] == "--preview" ? args[1] : null))
+    ("Profile settings persist, reject invalid files and survive cancelled saves", ProfileChecks.PersistenceAsync),
+    ("WPF startup, live profile changes, recovery, shutdown and layout", () => UiSmoke.RunAsync(args.Length == 2 && args[0] == "--preview" ? args[1] : null))
 };
 
 int failures = 0;

@@ -1,14 +1,15 @@
 using System.Windows;
 using WinLanChat.App.ViewModels;
+using WinLanChat.App.Services;
 
 namespace WinLanChat.App;
 
 public partial class App : Application
 {
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        var viewModel = new MainViewModel(Dispatcher);
+        var viewModel = new MainViewModel(Dispatcher, ProfileSettingsStore.ForCurrentUser());
         var window = new MainWindow { DataContext = viewModel };
         MainWindow = window;
         window.Closed += async (_, _) =>
@@ -17,5 +18,6 @@ public partial class App : Application
             finally { Shutdown(); }
         };
         window.Show();
+        await viewModel.InitializeAsync();
     }
 }

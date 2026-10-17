@@ -1,9 +1,12 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Windows.Threading;
 using WinLanChat.App.Infrastructure;
 using WinLanChat.App.Models;
+using WinLanChat.App.Services;
 using WinLanChat.Core.Models;
 using WinLanChat.Core.Networking;
 
@@ -12,6 +15,7 @@ namespace WinLanChat.App.ViewModels;
 public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly Dispatcher _dispatcher;
+    private readonly ProfileSettingsStore? _settingsStore;
     private readonly CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _connecting;
     private ChatNode? _node;
@@ -23,24 +27,33 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private string _remoteHost = "";
     private string _remotePort = "45832";
     private string _draft = "";
-    private string _status = "Готов к запуску";
-    private string _localAddresses = "Запустите приём, чтобы увидеть адрес этого компьютера.";
+    private string _status = "Запуск…";
+    private string _localAddresses = "Определение адреса этого компьютера…";
     private string _errorMessage = "";
     private PeerInfo? _peer;
     private bool _isListening;
+    private bool _isStarting;
+    private bool _settingsLoaded;
+    private bool _settingsNeedSave;
+    private bool _isSettingsOpen;
+    private ProfileSettings? _activeProfile;
     private bool _isConnecting;
     private bool _closed;
     private int _conversation;
 
-    public MainViewModel(Dispatcher dispatcher)
+    public MainViewModel(Dispatcher dispatcher, ProfileSettingsStore? settingsStore = null)
     {
         _dispatcher = dispatcher;
-        StartCommand = new AsyncCommand(StartAsync, ReportError, () => !IsListening);
+        _settingsStore = settingsStore;
+        ApplyProfileCommand = new AsyncCommand(ApplyProfileAsync, ReportError,
+            () => CanEditProfile && CanEditConnection && !IsRefreshing && HasProfileChanges);
+        ResetProfileCommand = new RelayCommand(ResetProfile, () => CanEditProfile && HasProfileChanges && _activeProfile is not null);
         ConnectCommand = new AsyncCommand(ConnectAsync, ReportError,
-            () => IsListening && !IsConnected && !IsConnecting && !string.IsNullOrWhiteSpace(RemoteHost));
+            () => IsListening && CanEditConnection && !string.IsNullOrWhiteSpace(RemoteHost));
         ConnectSelectedCommand = new AsyncCommand(ConnectSelectedAsync, ReportError,
             () => IsListening && CanEditConnection && SelectedPeer is not null);
-        RefreshPeersCommand = new AsyncCommand(RefreshPeersAsync, ReportError, () => IsListening && !IsRefreshing);
+        RefreshPeersCommand = new AsyncCommand(RefreshPeersAsync, ReportError,
+            () => IsListening && !_isStarting && !IsRefreshing && !_closed);
         SendCommand = new AsyncCommand(SendAsync, ReportError,
             () => IsConnected && !string.IsNullOrWhiteSpace(Draft) && Draft.Length <= ChatNode.MaximumMessageLength);
         DisconnectCommand = new RelayCommand(() => _node?.Disconnect(), () => IsConnected);
@@ -50,10 +63,20 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
     public ObservableCollection<ChatMessage> Messages { get; } = [];
     public ObservableCollection<DiscoveredPeer> Peers { get; } = [];
-    public AsyncCommand StartCommand { get; }
     public AsyncCommand ConnectCommand { get; }
     public AsyncCommand ConnectSelectedCommand { get; }
     public AsyncCommand RefreshPeersCommand { get; }
+    public AsyncCommand ApplyProfileCommand { get; }
+    public RelayCommand ResetProfileCommand { get; }
+    public bool IsSettingsOpen { get => _isSettingsOpen; set => Set(ref _isSettingsOpen, value); }
+    public bool HasProfileChanges => _settingsNeedSave || !IsListening || _activeProfile is null
+        || DisplayName.Trim() != _activeProfile.DisplayName
+        || !int.TryParse(LocalPort, out int port) || port != _activeProfile.ListeningPort;
+    public string ProfileHint => _isStarting ? "Применение настроек…"
+        : IsConnected || IsConnecting ? "Чтобы применить изменения, завершите подключение."
+        : HasProfileChanges ? "Изменения вступят в силу после применения."
+        : "Настройки применены. Приложение запускается автоматически.";
+    public string ActiveDisplayName => _activeProfile?.DisplayName ?? DisplayName;
     public DiscoveredPeer? SelectedPeer
     {
         get => _selectedPeer;
@@ -71,7 +94,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             }
         }
     }
-    public string DiscoveryStatus => !IsListening ? "Нажмите «Начать работу» для поиска."
+    public string DiscoveryStatus => !IsListening
+        ? _isStarting ? "Запуск поиска компьютеров…" : "Приём не запущен. Проверьте имя и порт в настройках."
         : IsRefreshing ? "Поиск компьютеров…"
         : Peers.Count == 0 ? "Пока никого нет. Запустите WinLanChat на другом ПК в этой сети."
         : $"Найдено: {Peers.Count}. Список обновляется автоматически.";
@@ -79,8 +103,16 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public RelayCommand DisconnectCommand { get; }
     public RelayCommand CancelConnectCommand { get; }
     public RelayCommand DismissErrorCommand { get; }
-    public string DisplayName { get => _displayName; set => Set(ref _displayName, value); }
-    public string LocalPort { get => _localPort; set => Set(ref _localPort, value); }
+    public string DisplayName
+    {
+        get => _displayName;
+        set { if (Set(ref _displayName, value)) RefreshProfile(); }
+    }
+    public string LocalPort
+    {
+        get => _localPort;
+        set { if (Set(ref _localPort, value)) RefreshProfile(); }
+    }
     public string RemotePort { get => _remotePort; set => Set(ref _remotePort, value); }
     public string RemoteHost
     {
@@ -121,11 +153,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             {
                 OnPropertyChanged(nameof(CanEditProfile));
                 OnPropertyChanged(nameof(DiscoveryStatus));
+                OnPropertyChanged(nameof(HasProfileChanges));
                 RefreshCommands();
             }
         }
     }
-    public bool CanEditProfile => !IsListening;
+    public bool CanEditProfile => !_isStarting && !_closed;
     public bool IsConnecting
     {
         get => _isConnecting;
@@ -134,24 +167,156 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             if (Set(ref _isConnecting, value))
             {
                 OnPropertyChanged(nameof(CanEditConnection));
+                OnPropertyChanged(nameof(ProfileHint));
                 RefreshCommands();
             }
         }
     }
     public bool IsConnected => _peer is not null;
-    public bool CanEditConnection => !IsConnecting && !IsConnected;
+    public bool CanEditConnection => !_closed && !_isStarting && !IsConnecting && !IsConnected;
     public string PeerName => _peer?.Name ?? "Ваш следующий разговор";
     public string PeerAddress => _peer?.Address ?? "Выберите компьютер в списке слева";
     public string ConnectionLabel => IsConnected ? "На связи" : "Нет подключения";
 
-    private async Task StartAsync()
+    public async Task InitializeAsync()
     {
+        if (_closed || IsListening || _isStarting)
+            return;
+        SetStarting(true);
+        try
+        {
+            string? loadError = null;
+            if (!_settingsLoaded && _settingsStore is not null)
+            {
+                _settingsLoaded = true;
+                try
+                {
+                    if (await _settingsStore.LoadAsync(_lifetime.Token) is { } settings)
+                    {
+                        DisplayName = settings.DisplayName;
+                        LocalPort = settings.ListeningPort.ToString();
+                    }
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
+                {
+                    loadError = "Не удалось прочитать настройки. Использованы параметры по умолчанию: " + ex.Message;
+                }
+            }
+            await StartAsync(new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort)));
+            if (loadError is not null)
+                ErrorMessage = loadError;
+        }
+        catch (OperationCanceledException) when (_closed) { }
+        catch (Exception ex)
+        {
+            if (!IsListening)
+            {
+                Status = "Не удалось запустить приём";
+                LocalAddresses = "Приём не запущен. Проверьте имя и порт.";
+                IsSettingsOpen = true;
+            }
+            ReportError(ex);
+        }
+        finally
+        {
+            SetStarting(false);
+        }
+    }
+
+    private void SetStarting(bool value)
+    {
+        _isStarting = value;
+        OnPropertyChanged(nameof(CanEditProfile));
+        OnPropertyChanged(nameof(CanEditConnection));
+        OnPropertyChanged(nameof(DiscoveryStatus));
+        RefreshProfile();
+    }
+
+    private void RefreshProfile()
+    {
+        OnPropertyChanged(nameof(HasProfileChanges));
+        OnPropertyChanged(nameof(ProfileHint));
+        OnPropertyChanged(nameof(ActiveDisplayName));
+        RefreshCommands();
+    }
+
+    private void ResetProfile()
+    {
+        if (_activeProfile is not { } profile)
+            return;
+        DisplayName = profile.DisplayName;
+        LocalPort = profile.ListeningPort.ToString();
+    }
+
+    private async Task ApplyProfileAsync()
+    {
+        var requested = new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort));
+        requested.Validate(); // Invalid drafts must leave the running listener intact.
+        ProfileSettings? previous = IsListening ? _activeProfile : null;
+        SetStarting(true);
         ErrorMessage = "";
-        int port = ParsePort(LocalPort);
-        var node = new ChatNode(DisplayName.Trim());
-        node.ConnectionChanged += OnConnectionChanged;
-        node.MessageReceived += OnMessageReceived;
-        node.Error += OnNetworkError;
+        try
+        {
+            bool needsRestart = !IsListening || requested != _activeProfile;
+            if (needsRestart)
+                await StopNetworkingAsync();
+            try
+            {
+                if (needsRestart)
+                    await StartAsync(requested);
+            }
+            catch (Exception ex) when (!_closed)
+            {
+                // Restore the previous working endpoint when a new port cannot be opened.
+                await StopNetworkingAsync();
+                if (previous is not null)
+                {
+                    try { await StartAsync(previous); }
+                    catch (Exception restoreError) when (!_closed)
+                    {
+                        Status = "Не удалось запустить приём";
+                        LocalAddresses = "Приём не запущен. Проверьте имя и порт.";
+                        throw new IOException($"Не удалось применить настройки: {ex.Message}. Не удалось восстановить приём: {restoreError.Message}", restoreError);
+                    }
+                }
+                else
+                {
+                    Status = "Не удалось запустить приём";
+                    LocalAddresses = "Приём не запущен. Проверьте имя и порт.";
+                }
+                ReportError(ex);
+                if (previous is not null)
+                    ErrorMessage = $"Настройки не применены. {ErrorMessage} Прежние настройки восстановлены.";
+                return;
+            }
+            DisplayName = requested.DisplayName;
+            LocalPort = requested.ListeningPort.ToString();
+            if (_settingsStore is not null)
+            {
+                try { await _settingsStore.SaveAsync(requested, _lifetime.Token); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    _settingsNeedSave = true;
+                    ErrorMessage = "Настройки применены, но не сохранены для следующего запуска: " + ex.Message;
+                    return;
+                }
+            }
+            _settingsNeedSave = false;
+        }
+        catch (OperationCanceledException) when (_closed) { }
+        finally { SetStarting(false); }
+    }
+
+    private async Task StartAsync(ProfileSettings profile)
+    {
+        _lifetime.Token.ThrowIfCancellationRequested();
+        profile.Validate();
+        ErrorMessage = "";
+        int port = profile.ListeningPort;
+        var node = new ChatNode(profile.DisplayName);
+        node.ConnectionChanged += peer => OnConnectionChanged(node, peer);
+        node.MessageReceived += text => OnMessageReceived(node, text);
+        node.Error += message => OnNetworkError(node, message);
         try { node.Start(port); }
         catch
         {
@@ -159,6 +324,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             throw;
         }
         _node = node;
+        _activeProfile = profile;
+        RefreshProfile();
         IsListening = true;
         Status = "Ожидание подключения";
         LocalAddresses = $"Порт {port}";
@@ -187,9 +354,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         {
             if (_discovery is null)
             {
-                var discovery = new PeerDiscovery(DisplayName.Trim(), _node.ListeningPort);
-                discovery.PeersChanged += OnPeersChanged;
-                discovery.Error += OnNetworkError;
+                var discovery = new PeerDiscovery(_activeProfile!.DisplayName, _node.ListeningPort);
+                discovery.PeersChanged += peers => OnPeersChanged(discovery, peers);
+                discovery.Error += message => OnNetworkError(discovery, message);
                 try { discovery.Start(); }
                 catch
                 {
@@ -208,7 +375,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         finally { IsRefreshing = false; }
     }
 
-    private void OnPeersChanged(IReadOnlyList<DiscoveredPeer> peers) => Post(() =>
+    private void OnPeersChanged(PeerDiscovery source, IReadOnlyList<DiscoveredPeer> peers) => Post(source, () =>
     {
         Guid? selectedId = SelectedPeer?.Id;
         // Preserve list items and selection when only another participant changes.
@@ -278,7 +445,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
-    private void OnConnectionChanged(PeerInfo? peer) => Post(() =>
+    private void OnConnectionChanged(ChatNode source, PeerInfo? peer) => Post(source, () => UpdateConnection(peer));
+
+    private void UpdateConnection(PeerInfo? peer)
     {
         _peer = peer;
         if (peer is not null)
@@ -294,13 +463,14 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         OnPropertyChanged(nameof(PeerName));
         OnPropertyChanged(nameof(PeerAddress));
         OnPropertyChanged(nameof(ConnectionLabel));
+        OnPropertyChanged(nameof(ProfileHint));
         RefreshCommands();
-    });
+    }
 
-    private void OnMessageReceived(string text) => Post(() =>
+    private void OnMessageReceived(ChatNode source, string text) => Post(source, () =>
         AddMessage(new ChatMessage(PeerName, text, false, DateTimeOffset.Now)));
 
-    private void OnNetworkError(string message) => Post(() => ErrorMessage = message);
+    private void OnNetworkError(object source, string message) => Post(source, () => ErrorMessage = message);
 
     private void AddMessage(ChatMessage message)
     {
@@ -310,13 +480,13 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         Messages.Add(message);
     }
 
-    private void Post(Action action)
+    private void Post(object source, Action action)
     {
         if (_closed || _dispatcher.HasShutdownStarted)
             return;
         _dispatcher.BeginInvoke(() =>
         {
-            if (!_closed)
+            if (!_closed && (ReferenceEquals(_node, source) || ReferenceEquals(_discovery, source)))
                 action();
         });
     }
@@ -342,7 +512,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
     private void RefreshCommands()
     {
-        StartCommand.Refresh();
+        ApplyProfileCommand.Refresh();
+        ResetProfileCommand.Refresh();
         ConnectCommand.Refresh();
         ConnectSelectedCommand.Refresh();
         RefreshPeersCommand.Refresh();
@@ -357,18 +528,28 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             return;
         _closed = true;
         _lifetime.Cancel();
-        if (_discovery is not null)
+        await StopNetworkingAsync();
+    }
+
+    private async Task StopNetworkingAsync()
+    {
+        PeerDiscovery? discovery = _discovery;
+        ChatNode? node = _node;
+        _discovery = null;
+        _node = null;
+        IsListening = false;
+        SelectedPeer = null;
+        Peers.Clear();
+        UpdateConnection(null);
+        try
         {
-            _discovery.PeersChanged -= OnPeersChanged;
-            _discovery.Error -= OnNetworkError;
-            await _discovery.DisposeAsync();
+            if (discovery is not null)
+                await discovery.DisposeAsync();
         }
-        if (_node is not null)
+        finally
         {
-            _node.ConnectionChanged -= OnConnectionChanged;
-            _node.MessageReceived -= OnMessageReceived;
-            _node.Error -= OnNetworkError;
-            await _node.DisposeAsync();
+            if (node is not null)
+                await node.DisposeAsync();
         }
     }
 }
