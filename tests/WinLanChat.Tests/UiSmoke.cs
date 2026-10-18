@@ -71,6 +71,7 @@ internal static class UiSmoke
                         });
                         await CheckStartupRecoveryAsync(application.Dispatcher);
                         await ProfileChecks.RunAsync(application.Dispatcher);
+                        await WindowsStartupChecks.UiAsync(application.Dispatcher);
                         window.Close();
                     }
                     catch (Exception ex)

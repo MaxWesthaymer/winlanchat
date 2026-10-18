@@ -26,6 +26,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("Discovery rejects invalid packets, updates identities and expires silent peers", DiscoveryChecks.ValidateAndExpireAsync),
     ("Discovery ignores itself, supports cancellation and releases the UDP port", DiscoveryChecks.SelfAndCancellationAsync),
     ("Profile settings persist, reject invalid files and survive cancelled saves", ProfileChecks.PersistenceAsync),
+    ("Windows startup persists, quotes launch paths, cancels changes and preserves other registrations", WindowsStartupChecks.RegistryAsync),
     ("WPF attachments, empty captions, startup, profile changes, recovery, shutdown and layout", () => UiSmoke.RunAsync(args.Length == 2 && args[0] == "--preview" ? args[1] : null))
 };
 

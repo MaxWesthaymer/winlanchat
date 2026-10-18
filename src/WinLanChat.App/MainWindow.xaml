@@ -102,6 +102,16 @@
                                         Visibility="{Binding HasProfileChanges, Converter={StaticResource BoolVisibility}}"/>
                                 <TextBlock Text="{Binding ProfileHint}" TextWrapping="Wrap" FontSize="12" LineHeight="18"
                                            Foreground="{StaticResource MutedBrush}" Margin="0,10,0,0"/>
+                                <CheckBox x:Name="WindowsStartupCheckBox" Margin="0,18,0,0"
+                                          IsChecked="{Binding StartWithWindows, Mode=OneWay}"
+                                          Command="{Binding ToggleWindowsStartupCommand}"
+                                          Foreground="{StaticResource TextBrush}"
+                                          AutomationProperties.Name="Запускать вместе с Windows">
+                                    <TextBlock Text="Запускать вместе с Windows" TextWrapping="Wrap"/>
+                                </CheckBox>
+                                <TextBlock Text="При входе в вашу учётную запись. Сохраняется сразу."
+                                           TextWrapping="Wrap" FontSize="12" LineHeight="18"
+                                           Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Expander>
                         <Border Background="#10151F" CornerRadius="8" Padding="12" Margin="0,14,0,0">

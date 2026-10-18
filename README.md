@@ -7,6 +7,7 @@ Windows LAN messenger built with C#, .NET 10 and WPF. No cloud or central server
 - Dark WPF interface with MVVM and a virtualized conversation list.
 - Automatic IPv4 LAN discovery with a computer list, selection and a refresh button.
 - Receiving messages and discovering computers start automatically when the application opens.
+- Optional Windows sign-in startup, controlled by **Запускать вместе с Windows** in **Настройки**. The checkbox takes effect immediately, including during a conversation; no administrator rights are needed. The current executable path is registered in `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` (value `WinLanChat`); turn it off and on again after moving the app. The option is off by default and independent of the profile JSON file.
 - Name and listening port can be changed in **Настройки** and applied without restarting the app. Applied settings are saved locally for the next launch.
 - One direct TCP conversation at a time; manual IP/hostname connection is available in the expandable settings.
 - Text messages in both directions, Unicode and multiline text, up to 8,000 characters.
@@ -59,7 +60,7 @@ Broadcasts target active IPv4 adapter subnets and loopback for local testing. Di
 
 ## Verification
 
-The dependency-free console runner executes real loopback networking checks and renders the WPF window on a dedicated STA thread. It returns a nonzero exit code on failure:
+The dependency-free console runner executes real loopback networking checks and renders the WPF window on a dedicated STA thread. Windows startup checks use an isolated temporary registry key, and checkbox checks cover persistence, write failures, retries, cancellation, and changes during a conversation without modifying the user's actual startup registration. It returns a nonzero exit code on failure:
 
 ~~~powershell
 dotnet run --project tests/WinLanChat.Tests

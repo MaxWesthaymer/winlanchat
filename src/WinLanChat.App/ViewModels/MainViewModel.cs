@@ -17,6 +17,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly Dispatcher _dispatcher;
     private readonly ProfileSettingsStore? _settingsStore;
     private readonly IFileDialogs _fileDialogs;
+    private readonly IWindowsStartupService? _startupService;
+    private bool _startupLoaded;
+    private bool _startWithWindows;
     private readonly Dictionary<Guid, FileAttachmentViewModel> _attachments = [];
     private readonly HashSet<Task> _fileTasks = [];
     private string? _attachmentPath;
@@ -46,11 +49,16 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private bool _closed;
     private int _conversation;
 
-    public MainViewModel(Dispatcher dispatcher, ProfileSettingsStore? settingsStore = null, IFileDialogs? fileDialogs = null)
+    public MainViewModel(Dispatcher dispatcher, ProfileSettingsStore? settingsStore = null, IFileDialogs? fileDialogs = null,
+        IWindowsStartupService? startupService = null)
     {
         _dispatcher = dispatcher;
         _settingsStore = settingsStore;
         _fileDialogs = fileDialogs ?? new FileDialogs();
+        _startupService = startupService;
+        ToggleWindowsStartupCommand = new AsyncCommand(ToggleWindowsStartupAsync,
+            ex => ErrorMessage = "Не удалось изменить автозапуск: " + ex.Message,
+            () => _startupService is not null && _startupLoaded && !_closed);
         ApplyProfileCommand = new AsyncCommand(ApplyProfileAsync, ReportError,
             () => CanEditProfile && CanEditConnection && !IsRefreshing && HasProfileChanges);
         ResetProfileCommand = new RelayCommand(ResetProfile, () => CanEditProfile && HasProfileChanges && _activeProfile is not null);
@@ -76,6 +84,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public AsyncCommand RefreshPeersCommand { get; }
     public AsyncCommand ApplyProfileCommand { get; }
     public RelayCommand ResetProfileCommand { get; }
+    public AsyncCommand ToggleWindowsStartupCommand { get; }
+    public bool StartWithWindows
+    {
+        get => _startWithWindows;
+        private set => Set(ref _startWithWindows, value);
+    }
     public bool IsSettingsOpen { get => _isSettingsOpen; set => Set(ref _isSettingsOpen, value); }
     public bool HasProfileChanges => _settingsNeedSave || !IsListening || _activeProfile is null
         || DisplayName.Trim() != _activeProfile.DisplayName
@@ -83,7 +97,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string ProfileHint => _isStarting ? "Применение настроек…"
         : IsConnected || IsConnecting ? "Чтобы применить изменения, завершите подключение."
         : HasProfileChanges ? "Изменения вступят в силу после применения."
-        : "Настройки применены. Приложение запускается автоматически.";
+        : "Настройки применены.";
     public string ActiveDisplayName => _activeProfile?.DisplayName ?? DisplayName;
     public DiscoveredPeer? SelectedPeer
     {
@@ -199,6 +213,17 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         try
         {
             string? loadError = null;
+            if (!_startupLoaded && _startupService is not null)
+            {
+                try { StartWithWindows = await _startupService.IsEnabledAsync(_lifetime.Token); }
+                catch (OperationCanceledException) when (_closed) { throw; }
+                catch (Exception ex)
+                {
+                    loadError = "Не удалось проверить автозапуск: " + ex.Message;
+                }
+                _startupLoaded = true;
+                ToggleWindowsStartupCommand.Refresh();
+            }
             if (!_settingsLoaded && _settingsStore is not null)
             {
                 _settingsLoaded = true;
@@ -212,7 +237,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
                 {
-                    loadError = "Не удалось прочитать настройки. Использованы параметры по умолчанию: " + ex.Message;
+                    loadError = string.Join("\n", new[] { loadError,
+                        "Не удалось прочитать настройки. Использованы параметры по умолчанию: " + ex.Message }
+                        .Where(message => message is not null));
                 }
             }
             await StartAsync(new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort)));
@@ -243,6 +270,23 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         OnPropertyChanged(nameof(CanEditConnection));
         OnPropertyChanged(nameof(DiscoveryStatus));
         RefreshProfile();
+    }
+
+    private async Task ToggleWindowsStartupAsync()
+    {
+        bool enabled = !StartWithWindows;
+        ErrorMessage = "";
+        try
+        {
+            await _startupService!.SetEnabledAsync(enabled, _lifetime.Token);
+            StartWithWindows = enabled;
+        }
+        catch (OperationCanceledException) when (_closed) { }
+        finally
+        {
+            // Restore the checkbox from the confirmed value even if the registry write failed.
+            OnPropertyChanged(nameof(StartWithWindows));
+        }
     }
 
     private void RefreshProfile()
@@ -644,6 +688,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
     private void RefreshCommands()
     {
+        ToggleWindowsStartupCommand.Refresh();
         ApplyProfileCommand.Refresh();
         ResetProfileCommand.Refresh();
         ConnectCommand.Refresh();

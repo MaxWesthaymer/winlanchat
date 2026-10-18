@@ -9,7 +9,8 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        var viewModel = new MainViewModel(Dispatcher, ProfileSettingsStore.ForCurrentUser());
+        var viewModel = new MainViewModel(Dispatcher, ProfileSettingsStore.ForCurrentUser(),
+            startupService: new WindowsStartupService());
         var window = new MainWindow { DataContext = viewModel };
         MainWindow = window;
         window.Closed += async (_, _) =>
