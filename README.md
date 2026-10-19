@@ -7,6 +7,8 @@ Windows LAN messenger built with C#, .NET 10 and WPF. No cloud or central server
 - Dark WPF interface with MVVM and a virtualized conversation list.
 - Automatic IPv4 LAN discovery with a computer list, selection and a refresh button.
 - Receiving messages and discovering computers start automatically when the application opens.
+- A Windows notification-area icon keeps the app available in the system tray. Minimize or close the window to hide it while chat, discovery and file transfers continue. Double-click the icon or choose **Открыть WinLanChat** to restore it; choose **Выход** to disconnect and quit. Windows may place the icon in the tray overflow menu.
+- Incoming messages show a native Windows notification through the tray icon when the conversation window is hidden, minimized or inactive. Notifications include the sender and a short text preview (or filename for attachments); clicking one restores the current conversation. Messages received while the window is active and outgoing messages do not notify. File notifications never accept or save files. Windows notification settings and Do not disturb control banner visibility and sound; the app must remain running.
 - Optional Windows sign-in startup, controlled by **Запускать вместе с Windows** in **Настройки**. The checkbox takes effect immediately, including during a conversation; no administrator rights are needed. The current executable path is registered in `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` (value `WinLanChat`); turn it off and on again after moving the app. The option is off by default and independent of the profile JSON file.
 - Name and listening port can be changed in **Настройки** and applied without restarting the app. Applied settings are saved locally for the next launch.
 - One direct TCP conversation at a time; manual IP/hostname connection is available in the expandable settings.
@@ -60,7 +62,7 @@ Broadcasts target active IPv4 adapter subnets and loopback for local testing. Di
 
 ## Verification
 
-The dependency-free console runner executes real loopback networking checks and renders the WPF window on a dedicated STA thread. Windows startup checks use an isolated temporary registry key, and checkbox checks cover persistence, write failures, retries, cancellation, and changes during a conversation without modifying the user's actual startup registration. It returns a nonzero exit code on failure:
+The dependency-free console runner executes real loopback networking checks and renders the WPF window on a dedicated STA thread. Tray checks cover hiding on minimize/close, restoring normal and maximized windows, receiving messages while hidden, notification-click restoration, and exiting with network cleanup. Notification checks use a recording adapter with real loopback messages to cover background/foreground behavior, outgoing suppression, filenames and captions, bounded Unicode previews, disposal, and shell failures. Windows startup checks use an isolated temporary registry key, and checkbox checks cover persistence, write failures, retries, cancellation, and changes during a conversation without modifying the user's actual startup registration. It returns a nonzero exit code on failure:
 
 ~~~powershell
 dotnet run --project tests/WinLanChat.Tests
@@ -82,4 +84,4 @@ dotnet run --project tests/WinLanChat.Tests -- --preview artifacts/preview
 
 ## Next milestones
 
-1. Local history, notifications and packaging.
+1. Local history and packaging.

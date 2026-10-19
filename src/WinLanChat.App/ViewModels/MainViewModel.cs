@@ -78,6 +78,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     }
 
     public ObservableCollection<ChatMessage> Messages { get; } = [];
+    public event Action<ChatMessage>? IncomingMessageReceived;
     public ObservableCollection<DiscoveredPeer> Peers { get; } = [];
     public AsyncCommand ConnectCommand { get; }
     public AsyncCommand ConnectSelectedCommand { get; }
@@ -654,6 +655,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             if (oldest >= 0) Messages.RemoveAt(oldest);
         }
         Messages.Add(message);
+        if (!message.IsOutgoing)
+            IncomingMessageReceived?.Invoke(message);
     }
 
     private void Post(object source, Action action)

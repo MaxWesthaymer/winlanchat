@@ -19,6 +19,7 @@ internal static class UiSmoke
             try
             {
                 var application = new WinLanChat.App.App();
+                MainViewModel? runningViewModel = null;
                 application.InitializeComponent();
                 application.Startup += (_, _) => application.Dispatcher.InvokeAsync(async () =>
                 {
@@ -26,6 +27,7 @@ internal static class UiSmoke
                     {
                         var window = (WinLanChat.App.MainWindow)application.MainWindow;
                         var viewModel = (MainViewModel)window.DataContext;
+                        runningViewModel = viewModel;
                         MessageLinkChecks.CheckRendering(window);
                         // Exercise the actual application lifecycle without a start command.
                         await WaitUntilAsync(() => viewModel.IsListening || viewModel.HasError);
@@ -72,7 +74,10 @@ internal static class UiSmoke
                         await CheckStartupRecoveryAsync(application.Dispatcher);
                         await ProfileChecks.RunAsync(application.Dispatcher);
                         await WindowsStartupChecks.UiAsync(application.Dispatcher);
-                        window.Close();
+                        await MessageNotificationChecks.RunAsync(window);
+                        await UiTrayChecks.RunAsync(application);
+                        application.SystemTray!.RequestExit();
+                        application.SystemTray.RequestExit();
                     }
                     catch (Exception ex)
                     {
@@ -82,6 +87,8 @@ internal static class UiSmoke
                     }
                 });
                 application.Run();
+                if (runningViewModel is { IsListening: true } or { IsConnected: true })
+                    throw new Exception("Exiting from the tray did not stop networking.");
                 completion.TrySetResult();
             }
             catch (Exception ex) { completion.SetException(ex); }
