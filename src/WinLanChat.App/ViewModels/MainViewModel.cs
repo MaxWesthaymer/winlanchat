@@ -32,7 +32,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private bool _isRefreshing;
     private string _displayName = Environment.UserName;
     private string _localPort = "45832";
-    private string _selectedLanguageCode = Strings.LanguageCode;
+    private string _selectedLanguageCode = Strings.GetDefaultLanguage();
     private string _remoteHost = "";
     private string _remotePort = "45832";
     private string _draft = "";

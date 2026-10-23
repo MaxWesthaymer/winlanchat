@@ -85,6 +85,51 @@ internal static class LocalizationChecks
         return Task.CompletedTask;
     }
 
+    internal static async Task FirstRunLanguageAsync(Dispatcher dispatcher)
+    {
+        CultureInfo originalCulture = CultureInfo.CurrentCulture;
+        CultureInfo originalUiCulture = CultureInfo.CurrentUICulture;
+        string originalLanguage = Strings.LanguageCode;
+        string path = Path.Combine(Path.GetTempPath(), $"WinLanChat-first-language-{Guid.NewGuid():N}.json");
+        var store = new ProfileSettingsStore(path);
+        try
+        {
+            foreach (string culture in new[] { "ru-RU", "ru-BY", "ru", "en-US", "de-DE", "ja-JP", "" })
+            {
+                File.Delete(path);
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
+                string expected = culture.StartsWith("ru", StringComparison.Ordinal) ? "ru" : "en";
+                // Region/number formatting must not determine the UI language.
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(expected == "ru" ? "en-US" : "ru-RU");
+                Strings.SetLanguage(expected == "ru" ? "en" : "ru");
+                using var listener = new TcpListener(IPAddress.Loopback, 0);
+                listener.Start();
+                int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+                listener.Stop();
+                await using (var firstRun = new MainViewModel(dispatcher, store) { LocalPort = port.ToString() })
+                {
+                    await firstRun.InitializeAsync();
+                    if (!firstRun.IsListening || firstRun.SelectedLanguageCode != expected || Strings.LanguageCode != expected)
+                        throw new Exception($"First launch selected the wrong language for '{culture}'.");
+                }
+
+                string savedLanguage = expected == "ru" ? "en" : "ru";
+                await store.SaveAsync(new ProfileSettings("Saved language", port) { LanguageCode = savedLanguage });
+                await using var restarted = new MainViewModel(dispatcher, store);
+                await restarted.InitializeAsync();
+                if (!restarted.IsListening || restarted.SelectedLanguageCode != savedLanguage || Strings.LanguageCode != savedLanguage)
+                    throw new Exception($"The Windows language '{culture}' overrode the saved language.");
+            }
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUiCulture;
+            Strings.SetLanguage(originalLanguage);
+            File.Delete(path);
+        }
+    }
+
     internal static void CheckWindow(Window window)
     {
         var content = (FrameworkElement)window.Content;

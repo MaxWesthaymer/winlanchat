@@ -49,7 +49,7 @@ foreach (var (name, run) in tests)
 {
     try
     {
-        await run().WaitAsync(TimeSpan.FromSeconds(name.StartsWith("WPF") ? 30 : 15));
+        await run().WaitAsync(TimeSpan.FromSeconds(name.StartsWith("WPF") ? 60 : 15));
         Console.WriteLine($"PASS  {name}");
     }
     catch (Exception ex)

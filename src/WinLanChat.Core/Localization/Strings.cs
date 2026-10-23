@@ -10,8 +10,11 @@ public static class Strings
         "WinLanChat.Core.Localization.russian", typeof(Strings).Assembly);
     private static readonly ResourceManager English = new(
         "WinLanChat.Core.Localization.english", typeof(Strings).Assembly);
-    public static string LanguageCode { get; private set; } = "ru";
+    public static string LanguageCode { get; private set; } = GetDefaultLanguage();
     public static event Action? LanguageChanged;
+
+    public static string GetDefaultLanguage() =>
+        CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru" ? "ru" : "en";
 
     public static bool IsSupportedLanguage(string? code) => code is "ru" or "en";
 

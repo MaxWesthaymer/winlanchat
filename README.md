@@ -1,100 +1,43 @@
 # WinLanChat
 
-Windows LAN messenger built with C#, .NET 10 and WPF. No cloud or central server.
+A lightweight Windows messenger for chatting and sharing files over your local network. No accounts, cloud, or central server required.
 
-## Current milestone
+## Features
 
-- Dark WPF interface with MVVM and a virtualized conversation list.
-- Automatic IPv4 LAN discovery with a computer list, selection and a refresh button.
-- Receiving messages and discovering computers start automatically when the application opens.
-- Only one application instance can run on a PC, including across Windows sessions. Launching it again exits the second process and restores the existing window from the tray when accessible to the current Windows user. The reservation is released on exit or process termination.
-- A Windows notification-area icon keeps the app available in the system tray. Minimize or close the window to hide it while chat, discovery and file transfers continue. Double-click the icon or choose **Открыть WinLanChat** to restore it; choose **Выход** to disconnect and quit. Windows may place the icon in the tray overflow menu.
-- Incoming messages show a native Windows notification through the tray icon when the conversation window is hidden, minimized or inactive. Notifications include the sender and a short text preview (or filename for attachments); clicking one restores the current conversation. Messages received while the window is active and outgoing messages do not notify. File notifications never accept or save files. Windows notification settings and Do not disturb control banner visibility and sound; the app must remain running.
-- Optional Windows sign-in startup, controlled by **Запускать вместе с Windows** in **Настройки**. The checkbox takes effect immediately, including during a conversation; no administrator rights are needed. The current executable path is registered in `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` (value `WinLanChat`); turn it off and on again after moving the app. The option is off by default and independent of the profile JSON file.
-- Name and listening port can be changed in **Настройки** and applied without restarting the app. Applied settings are saved locally for the next launch.
-- One direct TCP conversation at a time; manual IP/hostname connection is available in the expandable settings.
-- Text messages in both directions, Unicode and multiline text, up to 8,000 characters.
-- Multiple draft attachments through drag-and-drop or file selection, with an optional caption. Each file sends as a separate chat card with explicit acceptance, destination selection, progress, cancellation and partial-file cleanup.
-- Handshake validation, bounded protocol frames, connection timeout and cancellation.
-- Disconnect/reconnect and graceful shutdown.
-- No third-party NuGet packages.
+- Automatically finds other computers running WinLanChat on the same network.
+- Direct, one-to-one text chat with clickable links.
+- File sharing with drag-and-drop, progress, and cancellation. You choose whether and where to save incoming files.
+- Dark interface in English and Russian.
+- Background notifications, system tray access, and optional startup with Windows.
 
-Message history is in memory only; a new connection starts a new conversation, and only the most recent 2,000 messages are retained. The current protocol has no encryption or peer authentication; displayed names are supplied by the remote computer.
+## Get started
 
-## Requirements
+1. Open WinLanChat on two Windows computers connected to the same local network.
+2. If Windows asks for firewall access, allow WinLanChat on your private network.
+3. Select a computer under **Network computers** and click **Connect**. Connecting from one side is enough.
+4. Type a message and press **Enter** to send it. Use **Shift+Enter** for a new line.
+5. To share files, drag them into the conversation or click **+**, then press **Send**. The recipient clicks **Save…** to choose a destination.
 
-Windows and .NET SDK 10.0.402 (or a later patch in the same feature band).
-Visual Studio is optional.
+Use **Settings** to change your display name, language, or listening port. Disconnect before applying changes. You can also enable **Start with Windows** there.
 
-## Build and run
+Closing or minimizing the window keeps WinLanChat running in the system tray. Double-click its tray icon to reopen it, or choose **Exit** from the tray menu to quit.
 
-~~~powershell
-dotnet build WinLanChat.sln
+## Connection help
+
+Both computers must have WinLanChat running. If a computer does not appear, try **Refresh list** or use **Connect by IP manually** in Settings.
+
+Firewalls must allow UDP port **45831** for discovery and TCP port **45832** for chat and files (or your chosen listening port). Guest Wi-Fi, VPNs, and networks that isolate devices may prevent connections.
+
+## Current limitations
+
+- One conversation at a time; chat history is not saved and resets when you reconnect.
+- Messages and files are not encrypted, and peer identities are not verified. Use WinLanChat on trusted networks.
+- Interrupted file transfers cannot be resumed. Folders are not supported.
+
+## Run from source
+
+On Windows, install **.NET SDK 10.0.402** (or a later patch in the 10.0.4xx feature band), then run from the project folder:
+
+```powershell
 dotnet run --project src/WinLanChat.App
-~~~
-
-## Try it on two computers
-
-1. Run the application on both computers in the same LAN.
-2. Receiving messages and searching for computers start automatically, using your saved settings (your Windows user name and TCP port 45832 on first launch).
-3. If Windows asks about firewall access, allow the application on the private network.
-4. Computers running WinLanChat appear under **КОМПЬЮТЕРЫ В СЕТИ**. Select one and press **Подключиться**. Connecting from one side is sufficient. Press **Обновить список** to search immediately.
-5. Type a message and press **Отправить** or **Enter**. **Shift+Enter** inserts a newline.
-6. Select text within a message and press **Ctrl+C** to copy it, or right-click and choose **Копировать**. **Ctrl+A** selects the entire message when its text has focus.
-7. Click an **http://**, **https://** or **www.** link in a message to open it in your default browser. Addresses beginning with **www.** open over HTTPS.
-8. Press **＋** beside the message input to select multiple files, or drag files from Explorer into the conversation or message input. They are added to the existing draft without sending automatically; repeated paths are ignored. Remove any individual attachment with its **✕**. You can add a caption or leave the text empty, then press **Отправить** to send all attachments. Each file appears as a separate chat card; the caption accompanies the first file once. A draft holds up to 16 files, and active outgoing transfers plus the new batch must fit the protocol's 16-transfer limit. If there is no room, the draft is retained for retrying after current transfers finish. Folders are not supported; an invalid selection leaves the whole draft unchanged. Attachment requires a connected peer with file support.
-9. Incoming files appear inside their messages. Press **Сохранить…** and choose a destination, or **Отклонить**. **Отменить передачу** cancels an outgoing offer or an active transfer. Chat stays available during transfers.
-
-Files travel in bounded 32 KiB chunks over the existing TCP connection. Both computers must run a version with file support; older versions can still exchange text. Up to 16 incoming and 16 outgoing offers/transfers are pending at once, with a maximum of 1 TiB per file. A transfer stalls out after 45 seconds without incoming file data or save confirmation. Files are written to a temporary file beside the approved destination and moved into place only after all declared bytes arrive. Existing destinations are replaced only after the Save dialog's overwrite confirmation; cancellation or disconnect preserves them and removes partial files. Files are never opened or executed automatically. Interrupted transfers cannot be resumed.
-
-Open **Настройки** to edit your name or listening port, then press **Применить изменения**. Finish the current connection before applying; editing a draft does not affect the active listener or discovery announcements. **Отменить изменения** restores the applied values. If a new port cannot be opened, the app attempts to restore the previous listener and does not save the failed settings. Settings are saved in `%LOCALAPPDATA%/WinLanChat/settings.json`; an unreadable or invalid file is reported and the app starts with defaults.
-
-If the listening port is occupied at startup, settings open automatically. Choose a free port and press **Применить изменения**. Test conversations using two computers; repeat launches on the same PC restore the existing application. Manual connection is also available under **Подключение по IP вручную**.
-
-## Peer discovery
-
-Discovery uses application-specific UDP broadcasts on port **45831**; chat uses TCP **45832** by default (or the configured listening port). Allow inbound UDP 45831 and the selected TCP port for this app on the Windows private network profile. No firewall settings are changed automatically.
-
-Only computers with WinLanChat running and receiving connections are listed. This is not a scan of all Windows computers and does not implement IP Messenger's wire protocol. Peers announce every 10 seconds; silent peers expire after about 35 seconds. Normal shutdown sends a departure announcement. Refresh sends an immediate discovery query without interrupting the current conversation.
-
-Each running instance has a session identifier, so repeated announcements do not create duplicate rows and identical user/computer names remain separate. Discovery validates bounded packets, protocol versions, names and TCP ports; the connection address is taken from the UDP sender, not an advertised host field. Up to 1,024 participants are kept in memory. Peer names and presence are untrusted and unauthenticated.
-
-Broadcasts target active IPv4 adapter subnets and loopback for local testing. Discovery is limited to the local broadcast network: routers, guest Wi-Fi isolation, VPNs or firewall rules may block it. IPv6 discovery and discovery across routed subnets are not implemented; use the manual connection option where needed.
-
-## Verification
-
-The dependency-free console runner executes real loopback networking checks and renders the WPF window on a dedicated STA thread. Tray checks cover hiding on minimize/close, restoring normal and maximized windows, receiving messages while hidden, notification-click restoration, and exiting with network cleanup. Notification checks use a recording adapter with real loopback messages to cover background/foreground behavior, outgoing suppression, filenames and captions, bounded Unicode previews, disposal, and shell failures. Windows startup checks use an isolated temporary registry key, and checkbox checks cover persistence, write failures, retries, cancellation, and changes during a conversation without modifying the user's actual startup registration. It returns a nonzero exit code on failure:
-
-~~~powershell
-dotnet run --project tests/WinLanChat.Tests
-~~~
-
-Coverage: Unicode and maximum-size messages, concurrent sends, file byte integrity and captions, empty files, file-only messages, bidirectional transfers alongside chat, explicit acceptance, rejection, cancellation from both ends, disconnect cleanup, safe filenames, malformed file frames, overwrite protection, WPF attachment commands and rendering, validation, busy-peer rejection, reconnect, handshake cancellation, malformed frames, port release on shutdown, discovery and connection through discovered endpoints, shared-port broadcasts, automatic refresh, duplicate/self suppression, departure/expiry, invalid discovery packets, refresh cancellation, automatic app startup, applying names and ports, unchanged live identity while editing, port-conflict recovery, saved settings, corrupt settings, cancelled writes, and save retries. This runner is invoked with dotnet run, not dotnet test.
-
-To save render previews while running the checks:
-
-~~~powershell
-dotnet run --project tests/WinLanChat.Tests -- --preview artifacts/preview
-~~~
-
-## Layout
-
-- src/WinLanChat.App — views, styles, view models and UI behavior.
-- src/WinLanChat.Core — independent protocol, TCP service and models.
-- tests/WinLanChat.Tests — executable networking checks.
-
-## Localization
-
-All application-owned user-facing text is stored in `src/WinLanChat.Core/Localization/russian.resx`.
-Russian is the default and currently the only language, regardless of the Windows display language.
-The resource is embedded in the Core assembly and shared by the UI, view models and networking services.
-Edit the resource values to change text; preserve numbered format placeholders such as `{0}` and `{1:0}`.
-`Strings.cs` provides typed resource access for C# and `x:Static` references in XAML. Add a matching
-property there when adding a new resource key. Numeric formatting follows the current Windows culture.
-Peer-provided names, message contents and operating-system error details are displayed as received.
-Run `dotnet run --project tests/WinLanChat.Tests -- --localization-only` to check resource loading,
-culture fallback, formatted values and WPF labels without starting another messenger instance.
-
-## Next milestones
-
-1. Local history and packaging.
+```
