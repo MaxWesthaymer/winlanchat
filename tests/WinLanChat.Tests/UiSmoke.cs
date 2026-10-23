@@ -74,6 +74,8 @@ internal static class UiSmoke
                         });
                         await CheckStartupRecoveryAsync(application.Dispatcher);
                         await ProfileChecks.RunAsync(application.Dispatcher);
+                        await LocalizationChecks.LanguageSettingsAsync(window, () =>
+                            Render(content, 1100, 690, previewDirectory, "window-settings-english.png"));
                         await WindowsStartupChecks.UiAsync(application.Dispatcher);
                         await MessageNotificationChecks.RunAsync(window);
                         await UiTrayChecks.RunAsync(application);

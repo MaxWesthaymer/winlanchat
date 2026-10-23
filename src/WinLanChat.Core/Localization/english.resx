@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="AppTagline" xml:space="preserve">
+    <value>Chat on your local network</value>
+  </data>
+  <data name="DirectConnection" xml:space="preserve">
+    <value>Direct connection</value>
+  </data>
+  <data name="YourComputer" xml:space="preserve">
+    <value>YOUR COMPUTER</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="DisplayName" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="ListeningPort" xml:space="preserve">
+    <value>Listen port</value>
+  </data>
+  <data name="ApplyChanges" xml:space="preserve">
+    <value>Apply changes</value>
+  </data>
+  <data name="ResetChanges" xml:space="preserve">
+    <value>Discard changes</value>
+  </data>
+  <data name="StartWithWindows" xml:space="preserve">
+    <value>Start with Windows</value>
+  </data>
+  <data name="StartWithWindowsHint" xml:space="preserve">
+    <value>When you sign in to your account. Saved immediately.</value>
+  </data>
+  <data name="YourAddress" xml:space="preserve">
+    <value>Your address</value>
+  </data>
+  <data name="NetworkComputers" xml:space="preserve">
+    <value>NETWORK COMPUTERS</value>
+  </data>
+  <data name="RefreshPeers" xml:space="preserve">
+    <value>↻  Refresh list</value>
+  </data>
+  <data name="NetworkComputersAccessibleName" xml:space="preserve">
+    <value>Network computers</value>
+  </data>
+  <data name="Connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="CancelConnection" xml:space="preserve">
+    <value>Cancel connection</value>
+  </data>
+  <data name="ManualConnection" xml:space="preserve">
+    <value>Connect by IP manually</value>
+  </data>
+  <data name="PeerHost" xml:space="preserve">
+    <value>Peer address</value>
+  </data>
+  <data name="PeerHostExample" xml:space="preserve">
+    <value>For example: 192.168.1.25</value>
+  </data>
+  <data name="Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="PeerPort" xml:space="preserve">
+    <value>Peer port</value>
+  </data>
+  <data name="ConnectByIp" xml:space="preserve">
+    <value>Connect by IP</value>
+  </data>
+  <data name="ConnectionInstructions" xml:space="preserve">
+    <value>Start WinLanChat on both PCs. Select a computer in the list and connect from one side.</value>
+  </data>
+  <data name="Disconnect" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="DismissError" xml:space="preserve">
+    <value>Dismiss error</value>
+  </data>
+  <data name="EmptyConversationTitle" xml:space="preserve">
+    <value>Your conversation starts here</value>
+  </data>
+  <data name="EmptyConversationHint" xml:space="preserve">
+    <value>Connect two computers on the same network and send your first message.</value>
+  </data>
+  <data name="Conversation" xml:space="preserve">
+    <value>Conversation</value>
+  </data>
+  <data name="ConversationMessageText" xml:space="preserve">
+    <value>Conversation message text</value>
+  </data>
+  <data name="FileTransferProgress" xml:space="preserve">
+    <value>File transfer progress</value>
+  </data>
+  <data name="SaveFile" xml:space="preserve">
+    <value>Save…</value>
+  </data>
+  <data name="RejectFile" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+  <data name="CancelTransfer" xml:space="preserve">
+    <value>Cancel transfer</value>
+  </data>
+  <data name="AttachedFiles" xml:space="preserve">
+    <value>Attached files</value>
+  </data>
+  <data name="RemoveAttachment" xml:space="preserve">
+    <value>Remove attachment</value>
+  </data>
+  <data name="AttachFilesHint" xml:space="preserve">
+    <value>Attach files or drag them into the chat</value>
+  </data>
+  <data name="AttachFiles" xml:space="preserve">
+    <value>Attach files</value>
+  </data>
+  <data name="MessageText" xml:space="preserve">
+    <value>Message text</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Send  →</value>
+  </data>
+  <data name="MessageInputHint" xml:space="preserve">
+    <value>Enter — send   ·   Shift + Enter — new line</value>
+  </data>
+  <data name="DropFilesTitle" xml:space="preserve">
+    <value>Drop files to attach</value>
+  </data>
+  <data name="DropFilesHint" xml:space="preserve">
+    <value>Up to 16 files · Click Send to start sending</value>
+  </data>
+  <data name="Starting" xml:space="preserve">
+    <value>Starting…</value>
+  </data>
+  <data name="ResolvingLocalAddress" xml:space="preserve">
+    <value>Finding this computer's address…</value>
+  </data>
+  <data name="ApplyingSettings" xml:space="preserve">
+    <value>Applying settings…</value>
+  </data>
+  <data name="DisconnectToApplySettings" xml:space="preserve">
+    <value>Disconnect to apply changes to your name or port.</value>
+  </data>
+  <data name="UnappliedSettingsHint" xml:space="preserve">
+    <value>Changes take effect after you apply them.</value>
+  </data>
+  <data name="SettingsApplied" xml:space="preserve">
+    <value>Settings applied.</value>
+  </data>
+  <data name="StartingDiscovery" xml:space="preserve">
+    <value>Starting computer discovery…</value>
+  </data>
+  <data name="ListenerNotStartedSettingsHint" xml:space="preserve">
+    <value>Not listening. Check your name and port in settings.</value>
+  </data>
+  <data name="SearchingPeers" xml:space="preserve">
+    <value>Searching for computers…</value>
+  </data>
+  <data name="NoPeersFound" xml:space="preserve">
+    <value>No computers yet. Start WinLanChat on another PC on this network.</value>
+  </data>
+  <data name="NextConversation" xml:space="preserve">
+    <value>Your next conversation</value>
+  </data>
+  <data name="SelectComputerHint" xml:space="preserve">
+    <value>Select a computer from the list on the left</value>
+  </data>
+  <data name="Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="NotConnected" xml:space="preserve">
+    <value>Not connected</value>
+  </data>
+  <data name="ListenerStartFailed" xml:space="preserve">
+    <value>Could not start listening</value>
+  </data>
+  <data name="ListenerNotStarted" xml:space="preserve">
+    <value>Not listening. Check your name and port.</value>
+  </data>
+  <data name="WaitingForConnection" xml:space="preserve">
+    <value>Waiting for a connection</value>
+  </data>
+  <data name="Connecting" xml:space="preserve">
+    <value>Connecting…</value>
+  </data>
+  <data name="ConnectionCancelled" xml:space="preserve">
+    <value>Connection cancelled.</value>
+  </data>
+  <data name="ConnectionEstablished" xml:space="preserve">
+    <value>Connection established</value>
+  </data>
+  <data name="SelfAuthor" xml:space="preserve">
+    <value>You</value>
+  </data>
+  <data name="FoldersNotSupported" xml:space="preserve">
+    <value>Attach files. Folder transfers are not supported.</value>
+  </data>
+  <data name="FileTooLarge" xml:space="preserve">
+    <value>The file exceeds 1 TB.</value>
+  </data>
+  <data name="ConnectionClosed" xml:space="preserve">
+    <value>Connection closed.</value>
+  </data>
+  <data name="PeerDisconnectedStatus" xml:space="preserve">
+    <value>Peer disconnected</value>
+  </data>
+  <data name="OperationCancelledOrTimedOut" xml:space="preserve">
+    <value>The operation was cancelled or timed out.</value>
+  </data>
+  <data name="PortAlreadyInUse" xml:space="preserve">
+    <value>This port is already in use. Choose another port.</value>
+  </data>
+  <data name="ConnectionRefused" xml:space="preserve">
+    <value>The computer refused the connection. Check the address, port and that the app is running.</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>Could not connect. Check the address, local network and Windows Firewall.</value>
+  </data>
+  <data name="InvalidPort" xml:space="preserve">
+    <value>The port must be a number from 1 to 65535.</value>
+  </data>
+  <data name="WaitingForFileAcceptance" xml:space="preserve">
+    <value>Waiting for the recipient to accept…</value>
+  </data>
+  <data name="SaveIncomingFilePrompt" xml:space="preserve">
+    <value>Save this file to your computer?</value>
+  </data>
+  <data name="SendingFile" xml:space="preserve">
+    <value>Sending</value>
+  </data>
+  <data name="ReceivingFile" xml:space="preserve">
+    <value>Receiving</value>
+  </data>
+  <data name="FileSent" xml:space="preserve">
+    <value>File sent</value>
+  </data>
+  <data name="FileSaved" xml:space="preserve">
+    <value>File saved</value>
+  </data>
+  <data name="FileRejected" xml:space="preserve">
+    <value>File rejected</value>
+  </data>
+  <data name="TransferCancelled" xml:space="preserve">
+    <value>Transfer cancelled</value>
+  </data>
+  <data name="ApplicationPathUnavailable" xml:space="preserve">
+    <value>Could not determine the application path.</value>
+  </data>
+  <data name="StartupSettingsUnavailable" xml:space="preserve">
+    <value>Could not open startup settings.</value>
+  </data>
+  <data name="OpenApplication" xml:space="preserve">
+    <value>Open WinLanChat</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="TrayTooltip" xml:space="preserve">
+    <value>WinLanChat — running on your local network</value>
+  </data>
+  <data name="EmptySettingsFile" xml:space="preserve">
+    <value>The settings file is empty.</value>
+  </data>
+  <data name="SaveReceivedFile" xml:space="preserve">
+    <value>Save received file</value>
+  </data>
+  <data name="AllFilesFilter" xml:space="preserve">
+    <value>All files (*.*)|*.*</value>
+  </data>
+  <data name="WebLinksOnly" xml:space="preserve">
+    <value>Only HTTP or HTTPS web links can be opened.</value>
+  </data>
+  <data name="NewMessage" xml:space="preserve">
+    <value>New message</value>
+  </data>
+  <data name="InvalidDisplayName" xml:space="preserve">
+    <value>The name must contain 1 to 64 characters with no control characters.</value>
+  </data>
+  <data name="BrowserOpenFailed" xml:space="preserve">
+    <value>Could not open the link in your browser. You can select and copy it.</value>
+  </data>
+  <data name="InvalidPeerName" xml:space="preserve">
+    <value>Invalid peer name.</value>
+  </data>
+  <data name="DiscoveryAlreadyStarted" xml:space="preserve">
+    <value>Discovery has already started.</value>
+  </data>
+  <data name="DiscoveryNotStarted" xml:space="preserve">
+    <value>Discovery has not started yet.</value>
+  </data>
+  <data name="MessageTooLarge" xml:space="preserve">
+    <value>The message exceeds the maximum size.</value>
+  </data>
+  <data name="InvalidFrameSize" xml:space="preserve">
+    <value>Invalid network message size.</value>
+  </data>
+  <data name="EmptyNetworkMessage" xml:space="preserve">
+    <value>Received an empty network message.</value>
+  </data>
+  <data name="InvalidFileMessage" xml:space="preserve">
+    <value>Invalid file message.</value>
+  </data>
+  <data name="InvalidFileName" xml:space="preserve">
+    <value>Invalid file name.</value>
+  </data>
+  <data name="PeerNotConnected" xml:space="preserve">
+    <value>The peer is not connected.</value>
+  </data>
+  <data name="PeerFileSupportRequired" xml:space="preserve">
+    <value>Update WinLanChat on the other computer to transfer files.</value>
+  </data>
+  <data name="TooManyPendingFiles" xml:space="preserve">
+    <value>Too many files waiting to be sent.</value>
+  </data>
+  <data name="AttachedFileChanged" xml:space="preserve">
+    <value>The file has changed since it was attached. Attach it again.</value>
+  </data>
+  <data name="SourceFileChanged" xml:space="preserve">
+    <value>The source file changed while it was being sent.</value>
+  </data>
+  <data name="FileOfferUnavailable" xml:space="preserve">
+    <value>The file offer is no longer available.</value>
+  </data>
+  <data name="FileOfferAlreadyHandled" xml:space="preserve">
+    <value>The file offer has already been handled.</value>
+  </data>
+  <data name="DestinationAlreadyExists" xml:space="preserve">
+    <value>A file with this name already exists.</value>
+  </data>
+  <data name="InvalidTransferId" xml:space="preserve">
+    <value>Invalid transfer ID.</value>
+  </data>
+  <data name="InvalidFileOffer" xml:space="preserve">
+    <value>Invalid file offer.</value>
+  </data>
+  <data name="DuplicateTransferId" xml:space="preserve">
+    <value>Duplicate transfer ID.</value>
+  </data>
+  <data name="InvalidFileChunk" xml:space="preserve">
+    <value>Invalid file chunk.</value>
+  </data>
+  <data name="FileConsentRequired" xml:space="preserve">
+    <value>The file transfer started without the recipient's consent.</value>
+  </data>
+  <data name="FileExceedsDeclaredSize" xml:space="preserve">
+    <value>The file exceeds its declared size.</value>
+  </data>
+  <data name="IncompleteFile" xml:space="preserve">
+    <value>The file was not received in full.</value>
+  </data>
+  <data name="PeerDisconnected" xml:space="preserve">
+    <value>The peer disconnected.</value>
+  </data>
+  <data name="ListenerAlreadyStarted" xml:space="preserve">
+    <value>Already listening for connections.</value>
+  </data>
+  <data name="InvalidPeerAddress" xml:space="preserve">
+    <value>Check the peer's address and port.</value>
+  </data>
+  <data name="ConnectionAlreadyActive" xml:space="preserve">
+    <value>End the current connection before starting a new one.</value>
+  </data>
+  <data name="IncompatiblePeer" xml:space="preserve">
+    <value>The peer is using an incompatible protocol or an invalid name.</value>
+  </data>
+  <data name="InvalidMessage" xml:space="preserve">
+    <value>Received an invalid message.</value>
+  </data>
+  <data name="StartupChangeFailed" xml:space="preserve">
+    <value>Could not change startup settings: {0}</value>
+  </data>
+  <data name="StartupReadFailed" xml:space="preserve">
+    <value>Could not read startup settings: {0}</value>
+  </data>
+  <data name="SettingsReadFailed" xml:space="preserve">
+    <value>Could not read settings. Using defaults: {0}</value>
+  </data>
+  <data name="SettingsApplyAndRestoreFailed" xml:space="preserve">
+    <value>Could not apply settings: {0}. Could not restore the listener: {1}</value>
+  </data>
+  <data name="SettingsRestored" xml:space="preserve">
+    <value>Settings were not applied. {0} Previous settings restored.</value>
+  </data>
+  <data name="SettingsSaveFailed" xml:space="preserve">
+    <value>Settings applied, but could not be saved for the next launch: {0}</value>
+  </data>
+  <data name="PeersFound" xml:space="preserve">
+    <value>Found: {0}. The list updates automatically.</value>
+  </data>
+  <data name="LocalPort" xml:space="preserve">
+    <value>Port {0}</value>
+  </data>
+  <data name="LocalAddressNotFound" xml:space="preserve">
+    <value>No LAN address found. Port {0}.</value>
+  </data>
+  <data name="LocalAddressAndPort" xml:space="preserve">
+    <value>{0}  •  port {1}</value>
+  </data>
+  <data name="LocalAddressLookupFailed" xml:space="preserve">
+    <value>Could not determine the LAN address. Port {0}.</value>
+  </data>
+  <data name="DiscoveryUnavailable" xml:space="preserve">
+    <value>Computer discovery is unavailable: {0}. Check firewall access for UDP {1}.</value>
+  </data>
+  <data name="ConcurrentFilesLimit" xml:space="preserve">
+    <value>You can transfer up to {0} files at once. Wait for current transfers to finish or remove some attachments.</value>
+  </data>
+  <data name="AttachmentBatchLimit" xml:space="preserve">
+    <value>You can attach up to {0} files at a time.</value>
+  </data>
+  <data name="DraftFilesLimit" xml:space="preserve">
+    <value>A draft can contain up to {0} files. Remove some attachments.</value>
+  </data>
+  <data name="TransferStatus" xml:space="preserve">
+    <value>{0} · {1:0}% · {2} / {3}</value>
+  </data>
+  <data name="TransferFailed" xml:space="preserve">
+    <value>Transfer failed: {0}</value>
+  </data>
+  <data name="SizeBytes" xml:space="preserve">
+    <value>{0} B</value>
+  </data>
+  <data name="SizeKilobytes" xml:space="preserve">
+    <value>{0:0.#} KB</value>
+  </data>
+  <data name="SizeMegabytes" xml:space="preserve">
+    <value>{0:0.#} MB</value>
+  </data>
+  <data name="SizeGigabytes" xml:space="preserve">
+    <value>{0:0.##} GB</value>
+  </data>
+  <data name="FileNotificationWithCaption" xml:space="preserve">
+    <value>File: {0} · {1}</value>
+  </data>
+  <data name="FileNotification" xml:space="preserve">
+    <value>File: {0}</value>
+  </data>
+  <data name="DiscoveryStopped" xml:space="preserve">
+    <value>Computer discovery stopped: {0}</value>
+  </data>
+  <data name="DiscoveryRefreshFailed" xml:space="preserve">
+    <value>Could not refresh the computer list: {0}</value>
+  </data>
+  <data name="InvalidMessageLength" xml:space="preserve">
+    <value>The message must contain 1 to {0} characters.</value>
+  </data>
+  <data name="ListenerFailed" xml:space="preserve">
+    <value>Listener error: {0}</value>
+  </data>
+  <data name="AcceptConnectionFailed" xml:space="preserve">
+    <value>Could not accept the connection: {0}</value>
+  </data>
+  <data name="ConnectionInterrupted" xml:space="preserve">
+    <value>Connection interrupted: {0}</value>
+  </data>
+  <data name="DraftCounter" xml:space="preserve">
+    <value>{0:N0} / {1:N0}</value>
+  </data>
+  <data name="AppName" xml:space="preserve">
+    <value>WinLanChat</value>
+  </data>
+  <data name="MessageTimeFormat" xml:space="preserve">
+    <value>HH:mm</value>
+  </data>
+  <data name="PeerDescription" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="ActivationListenerAlreadyRegistered" xml:space="preserve">
+    <value>An activation listener is already registered.</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="InvalidLanguage" xml:space="preserve">
+    <value>Choose a supported interface language.</value>
+  </data>
+</root>

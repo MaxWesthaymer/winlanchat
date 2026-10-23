@@ -32,11 +32,13 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private bool _isRefreshing;
     private string _displayName = Environment.UserName;
     private string _localPort = "45832";
+    private string _selectedLanguageCode = Strings.LanguageCode;
     private string _remoteHost = "";
     private string _remotePort = "45832";
     private string _draft = "";
-    private string _status = Strings.Starting;
-    private string _localAddresses = Strings.ResolvingLocalAddress;
+    private string _statusKey = nameof(Strings.Starting);
+    private string _localAddressKey = nameof(Strings.ResolvingLocalAddress);
+    private object?[] _localAddressArguments = [];
     private string _errorMessage = "";
     private PeerInfo? _peer;
     private bool _isListening;
@@ -60,7 +62,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             ex => ErrorMessage = Strings.Format(Strings.StartupChangeFailed, ex.Message),
             () => _startupService is not null && _startupLoaded && !_closed);
         ApplyProfileCommand = new AsyncCommand(ApplyProfileAsync, ReportError,
-            () => CanEditProfile && CanEditConnection && !IsRefreshing && HasProfileChanges);
+            () => CanEditProfile && HasProfileChanges
+                && (!HasNetworkProfileChanges || CanEditConnection && !IsRefreshing));
         ResetProfileCommand = new RelayCommand(ResetProfile, () => CanEditProfile && HasProfileChanges && _activeProfile is not null);
         ConnectCommand = new AsyncCommand(ConnectAsync, ReportError,
             () => IsListening && CanEditConnection && !string.IsNullOrWhiteSpace(RemoteHost));
@@ -84,6 +87,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         DisconnectCommand = new RelayCommand(() => _node?.Disconnect(), () => IsConnected);
         CancelConnectCommand = new RelayCommand(() => _connecting?.Cancel(), () => IsConnecting);
         DismissErrorCommand = new RelayCommand(() => ErrorMessage = "");
+        Strings.LanguageChanged += RefreshLocalization;
     }
 
     public ObservableCollection<ChatMessage> Messages { get; } = [];
@@ -101,11 +105,20 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         private set => Set(ref _startWithWindows, value);
     }
     public bool IsSettingsOpen { get => _isSettingsOpen; set => Set(ref _isSettingsOpen, value); }
-    public bool HasProfileChanges => _settingsNeedSave || !IsListening || _activeProfile is null
+    public IReadOnlyList<LanguageOption> Languages { get; } =
+        [new("ru", "Русский"), new("en", "English")];
+    public string SelectedLanguageCode
+    {
+        get => _selectedLanguageCode;
+        set { if (Set(ref _selectedLanguageCode, value)) RefreshProfile(); }
+    }
+    private bool HasNetworkProfileChanges => !IsListening || _activeProfile is null
         || DisplayName.Trim() != _activeProfile.DisplayName
         || !int.TryParse(LocalPort, out int port) || port != _activeProfile.ListeningPort;
+    public bool HasProfileChanges => _settingsNeedSave || HasNetworkProfileChanges
+        || SelectedLanguageCode != _activeProfile?.LanguageCode;
     public string ProfileHint => _isStarting ? Strings.ApplyingSettings
-        : IsConnected || IsConnecting ? Strings.DisconnectToApplySettings
+        : HasNetworkProfileChanges && (IsConnected || IsConnecting) ? Strings.DisconnectToApplySettings
         : HasProfileChanges ? Strings.UnappliedSettingsHint
         : Strings.SettingsApplied;
     public string ActiveDisplayName => _activeProfile?.DisplayName ?? DisplayName;
@@ -170,8 +183,19 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
     }
     public string DraftCounter => Strings.Format(Strings.DraftCounter, Draft.Length, ChatNode.MaximumMessageLength);
-    public string Status { get => _status; private set => Set(ref _status, value); }
-    public string LocalAddresses { get => _localAddresses; private set => Set(ref _localAddresses, value); }
+    public string Status => Strings.Get(_statusKey);
+    private void SetStatus(string key)
+    {
+        _statusKey = key;
+        OnPropertyChanged(nameof(Status));
+    }
+    public string LocalAddresses => Strings.Format(Strings.Get(_localAddressKey), _localAddressArguments);
+    private void SetLocalAddresses(string key, params object?[] arguments)
+    {
+        _localAddressKey = key;
+        _localAddressArguments = arguments;
+        OnPropertyChanged(nameof(LocalAddresses));
+    }
     public string ErrorMessage
     {
         get => _errorMessage;
@@ -224,17 +248,6 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         try
         {
             string? loadError = null;
-            if (!_startupLoaded && _startupService is not null)
-            {
-                try { StartWithWindows = await _startupService.IsEnabledAsync(_lifetime.Token); }
-                catch (OperationCanceledException) when (_closed) { throw; }
-                catch (Exception ex)
-                {
-                    loadError = Strings.Format(Strings.StartupReadFailed, ex.Message);
-                }
-                _startupLoaded = true;
-                ToggleWindowsStartupCommand.Refresh();
-            }
             if (!_settingsLoaded && _settingsStore is not null)
             {
                 _settingsLoaded = true;
@@ -244,6 +257,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                     {
                         DisplayName = settings.DisplayName;
                         LocalPort = settings.ListeningPort.ToString();
+                        SelectedLanguageCode = settings.LanguageCode;
                     }
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
@@ -253,7 +267,21 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                         .Where(message => message is not null));
                 }
             }
-            await StartAsync(new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort)));
+            Strings.SetLanguage(SelectedLanguageCode);
+            if (!_startupLoaded && _startupService is not null)
+            {
+                try { StartWithWindows = await _startupService.IsEnabledAsync(_lifetime.Token); }
+                catch (OperationCanceledException) when (_closed) { throw; }
+                catch (Exception ex)
+                {
+                    loadError = string.Join("\n", new[] { loadError,
+                        Strings.Format(Strings.StartupReadFailed, ex.Message) }
+                        .Where(message => message is not null));
+                }
+                _startupLoaded = true;
+                ToggleWindowsStartupCommand.Refresh();
+            }
+            await StartAsync(new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort)) { LanguageCode = SelectedLanguageCode });
             if (loadError is not null)
                 ErrorMessage = loadError;
         }
@@ -262,8 +290,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         {
             if (!IsListening)
             {
-                Status = Strings.ListenerStartFailed;
-                LocalAddresses = Strings.ListenerNotStarted;
+                SetStatus(nameof(Strings.ListenerStartFailed));
+                SetLocalAddresses(nameof(Strings.ListenerNotStarted));
                 IsSettingsOpen = true;
             }
             ReportError(ex);
@@ -308,24 +336,39 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RefreshCommands();
     }
 
+    private void RefreshLocalization()
+    {
+        foreach (string property in new[] { nameof(Status), nameof(LocalAddresses), nameof(ProfileHint),
+            nameof(DiscoveryStatus), nameof(PeerName), nameof(PeerAddress), nameof(ConnectionLabel), nameof(DraftCounter) })
+            OnPropertyChanged(property);
+        foreach (var message in Messages)
+        {
+            message.RefreshLocalization();
+            message.Attachment?.RefreshLocalization();
+        }
+        foreach (var attachment in DraftAttachments)
+            attachment.RefreshLocalization();
+    }
+
     private void ResetProfile()
     {
         if (_activeProfile is not { } profile)
             return;
         DisplayName = profile.DisplayName;
         LocalPort = profile.ListeningPort.ToString();
+        SelectedLanguageCode = profile.LanguageCode;
     }
 
     private async Task ApplyProfileAsync()
     {
-        var requested = new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort));
+        var requested = new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort)) { LanguageCode = SelectedLanguageCode };
         requested.Validate(); // Invalid drafts must leave the running listener intact.
         ProfileSettings? previous = IsListening ? _activeProfile : null;
         SetStarting(true);
         ErrorMessage = "";
         try
         {
-            bool needsRestart = !IsListening || requested != _activeProfile;
+            bool needsRestart = HasNetworkProfileChanges;
             if (needsRestart)
                 await StopNetworkingAsync();
             try
@@ -342,15 +385,15 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                     try { await StartAsync(previous); }
                     catch (Exception restoreError) when (!_closed)
                     {
-                        Status = Strings.ListenerStartFailed;
-                        LocalAddresses = Strings.ListenerNotStarted;
+                        SetStatus(nameof(Strings.ListenerStartFailed));
+                        SetLocalAddresses(nameof(Strings.ListenerNotStarted));
                         throw new IOException(Strings.Format(Strings.SettingsApplyAndRestoreFailed, ex.Message, restoreError.Message), restoreError);
                     }
                 }
                 else
                 {
-                    Status = Strings.ListenerStartFailed;
-                    LocalAddresses = Strings.ListenerNotStarted;
+                    SetStatus(nameof(Strings.ListenerStartFailed));
+                    SetLocalAddresses(nameof(Strings.ListenerNotStarted));
                 }
                 ReportError(ex);
                 if (previous is not null)
@@ -359,6 +402,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             }
             DisplayName = requested.DisplayName;
             LocalPort = requested.ListeningPort.ToString();
+            _activeProfile = requested;
+            Strings.SetLanguage(requested.LanguageCode);
             if (_settingsStore is not null)
             {
                 try { await _settingsStore.SaveAsync(requested, _lifetime.Token); }
@@ -409,19 +454,20 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _activeProfile = profile;
         RefreshProfile();
         IsListening = true;
-        Status = Strings.WaitingForConnection;
-        LocalAddresses = Strings.Format(Strings.LocalPort, port);
+        SetStatus(nameof(Strings.WaitingForConnection));
+        SetLocalAddresses(nameof(Strings.LocalPort), port);
         try
         {
             IPAddress[] addresses = await Dns.GetHostAddressesAsync(Dns.GetHostName(), _lifetime.Token);
             string list = string.Join("  •  ", addresses
                 .Where(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a))
                 .Select(a => a.ToString()).Distinct());
-            LocalAddresses = string.IsNullOrEmpty(list)
-                ? Strings.Format(Strings.LocalAddressNotFound, port)
-                : Strings.Format(Strings.LocalAddressAndPort, list, port);
+            if (string.IsNullOrEmpty(list))
+                SetLocalAddresses(nameof(Strings.LocalAddressNotFound), port);
+            else
+                SetLocalAddresses(nameof(Strings.LocalAddressAndPort), list, port);
         }
-        catch (SocketException) { LocalAddresses = Strings.Format(Strings.LocalAddressLookupFailed, port); }
+        catch (SocketException) { SetLocalAddresses(nameof(Strings.LocalAddressLookupFailed), port); }
         if (!_closed)
             await RefreshPeersAsync();
     }
@@ -495,7 +541,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             return;
         ErrorMessage = "";
         IsConnecting = true;
-        Status = Strings.Connecting;
+        SetStatus(nameof(Strings.Connecting));
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
         _connecting = cancellation;
         try { await _node.ConnectAsync(host, port, cancellation.Token); }
@@ -507,7 +553,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         {
             _connecting = null;
             IsConnecting = false;
-            Status = IsConnected ? Strings.ConnectionEstablished : Strings.WaitingForConnection;
+            SetStatus(IsConnected ? nameof(Strings.ConnectionEstablished) : nameof(Strings.WaitingForConnection));
         }
     }
 
@@ -672,7 +718,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             DraftAttachments.Clear();
             ErrorMessage = "";
         }
-        Status = peer is null ? Strings.PeerDisconnectedStatus : Strings.ConnectionEstablished;
+        SetStatus(peer is null ? nameof(Strings.PeerDisconnectedStatus) : nameof(Strings.ConnectionEstablished));
         OnPropertyChanged(nameof(IsConnected));
         OnPropertyChanged(nameof(CanEditConnection));
         OnPropertyChanged(nameof(PeerName));
@@ -752,6 +798,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         if (_closed)
             return;
         _closed = true;
+        Strings.LanguageChanged -= RefreshLocalization;
         _lifetime.Cancel();
         await StopNetworkingAsync();
         await Task.WhenAll(_fileTasks.ToArray());

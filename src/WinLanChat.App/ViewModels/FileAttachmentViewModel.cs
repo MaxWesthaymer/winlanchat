@@ -47,6 +47,12 @@ public sealed class FileAttachmentViewModel : ObservableObject
     public AsyncCommand RejectCommand { get; }
     public AsyncCommand CancelCommand { get; }
 
+    public void RefreshLocalization()
+    {
+        OnPropertyChanged(nameof(FileSize));
+        OnPropertyChanged(nameof(Status));
+    }
+
     public void Update(FileTransferUpdate update)
     {
         if (State is FileTransferState.Completed or FileTransferState.Rejected or FileTransferState.Cancelled or FileTransferState.Failed)

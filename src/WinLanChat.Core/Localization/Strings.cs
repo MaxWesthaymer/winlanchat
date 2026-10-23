@@ -3,18 +3,36 @@ using System.Resources;
 
 namespace WinLanChat.Core.Localization;
 
-/// <summary>Shared application text. Russian is the default and currently the only language.</summary>
+/// <summary>Shared application text. The saved language is independent of the Windows language.</summary>
 public static class Strings
 {
-    private static readonly ResourceManager Resources = new(
+    private static readonly ResourceManager Russian = new(
         "WinLanChat.Core.Localization.russian", typeof(Strings).Assembly);
+    private static readonly ResourceManager English = new(
+        "WinLanChat.Core.Localization.english", typeof(Strings).Assembly);
+    public static string LanguageCode { get; private set; } = "ru";
+    public static event Action? LanguageChanged;
 
-    private static string Get(string key) => Resources.GetString(key, CultureInfo.CurrentUICulture)
+    public static bool IsSupportedLanguage(string? code) => code is "ru" or "en";
+
+    public static void SetLanguage(string code)
+    {
+        if (!IsSupportedLanguage(code))
+            throw new ArgumentException("Unsupported language code.", nameof(code));
+        if (LanguageCode == code)
+            return;
+        LanguageCode = code;
+        LanguageChanged?.Invoke();
+    }
+
+    public static string Get(string key) => (LanguageCode == "en" ? English : Russian).GetString(key, CultureInfo.InvariantCulture)
         ?? throw new MissingManifestResourceException($"Missing localization key: {key}");
 
     public static string Format(string template, params object?[] arguments) =>
-        string.Format(CultureInfo.CurrentCulture, template, arguments);
+        string.Format(CultureInfo.GetCultureInfo(LanguageCode), template, arguments);
 
+    public static string Language => Get(nameof(Language));
+    public static string InvalidLanguage => Get(nameof(InvalidLanguage));
     public static string Copy => Get(nameof(Copy));
     public static string SelectAll => Get(nameof(SelectAll));
     public static string AppTagline => Get(nameof(AppTagline));

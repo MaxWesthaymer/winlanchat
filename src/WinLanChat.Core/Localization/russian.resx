@@ -483,4 +483,10 @@
   <data name="ActivationListenerAlreadyRegistered" xml:space="preserve">
     <value>Обработчик активации уже зарегистрирован.</value>
   </data>
+  <data name="Language" xml:space="preserve">
+    <value>Язык интерфейса</value>
+  </data>
+  <data name="InvalidLanguage" xml:space="preserve">
+    <value>Выберите поддерживаемый язык интерфейса.</value>
+  </data>
 </root>

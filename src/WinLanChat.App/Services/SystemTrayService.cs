@@ -43,6 +43,14 @@ internal sealed class SystemTrayService : IDisposable
         _window.StateChanged += OnStateChanged;
         _window.Closing += OnClosing;
         _window.Closed += OnClosed;
+        Strings.LanguageChanged += RefreshLocalization;
+    }
+
+    private void RefreshLocalization()
+    {
+        _menu.Items[0].Text = Strings.OpenApplication;
+        _menu.Items[2].Text = Strings.Exit;
+        _notifyIcon.Text = Strings.TrayTooltip;
     }
 
     public void RestoreWindow()
@@ -99,6 +107,7 @@ internal sealed class SystemTrayService : IDisposable
             return;
 
         _disposed = true;
+        Strings.LanguageChanged -= RefreshLocalization;
         _messageNotifications.Dispose();
         _window.StateChanged -= OnStateChanged;
         _window.Closing -= OnClosing;

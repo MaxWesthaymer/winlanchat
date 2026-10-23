@@ -33,7 +33,15 @@ internal static class ProfileChecks
             catch (OperationCanceledException) { }
             if (await store.LoadAsync() != settings)
                 throw new Exception("A cancelled write damaged the saved settings.");
+            await store.SaveAsync(settings with { LanguageCode = "en" });
+            if ((await store.LoadAsync())?.LanguageCode != "en")
+                throw new Exception("The selected language was not saved.");
+            await File.WriteAllTextAsync(path, "{\"DisplayName\":\"Legacy profile\",\"ListeningPort\":45832}");
+            if ((await store.LoadAsync())?.LanguageCode != "ru")
+                throw new Exception("Existing profiles did not keep Russian as the default language.");
             foreach (string invalid in new[] { "{invalid json", "null", "{\"DisplayName\":null,\"ListeningPort\":45832}",
+                "{\"DisplayName\":\"Name\",\"ListeningPort\":45832,\"LanguageCode\":\"de\"}",
+                "{\"DisplayName\":\"Name\",\"ListeningPort\":45832,\"LanguageCode\":null}",
                 "{\"DisplayName\":\"Name\",\"ListeningPort\":0}", "{\"DisplayName\":\"bad\\nname\",\"ListeningPort\":45832}" })
             {
                 await File.WriteAllTextAsync(path, invalid);
