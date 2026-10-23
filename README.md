@@ -13,7 +13,7 @@ Windows LAN messenger built with C#, .NET 10 and WPF. No cloud or central server
 - Name and listening port can be changed in **Настройки** and applied without restarting the app. Applied settings are saved locally for the next launch.
 - One direct TCP conversation at a time; manual IP/hostname connection is available in the expandable settings.
 - Text messages in both directions, Unicode and multiline text, up to 8,000 characters.
-- One file attached to a message, with an optional text caption. Explicit acceptance, destination selection, progress, cancellation and partial-file cleanup.
+- Multiple draft attachments through drag-and-drop or file selection, with an optional caption. Each file sends as a separate chat card with explicit acceptance, destination selection, progress, cancellation and partial-file cleanup.
 - Handshake validation, bounded protocol frames, connection timeout and cancellation.
 - Disconnect/reconnect and graceful shutdown.
 - No third-party NuGet packages.
@@ -41,7 +41,7 @@ dotnet run --project src/WinLanChat.App
 5. Type a message and press **Отправить** or **Enter**. **Shift+Enter** inserts a newline.
 6. Select text within a message and press **Ctrl+C** to copy it, or right-click and choose **Копировать**. **Ctrl+A** selects the entire message when its text has focus.
 7. Click an **http://**, **https://** or **www.** link in a message to open it in your default browser. Addresses beginning with **www.** open over HTTPS.
-8. Press **＋** beside the message input to attach a file. You can add a caption or leave the text empty, then press **Отправить**. Remove an unsent attachment with **✕**.
+8. Press **＋** beside the message input to select multiple files, or drag files from Explorer into the conversation or message input. They are added to the existing draft without sending automatically; repeated paths are ignored. Remove any individual attachment with its **✕**. You can add a caption or leave the text empty, then press **Отправить** to send all attachments. Each file appears as a separate chat card; the caption accompanies the first file once. A draft holds up to 16 files, and active outgoing transfers plus the new batch must fit the protocol's 16-transfer limit. If there is no room, the draft is retained for retrying after current transfers finish. Folders are not supported; an invalid selection leaves the whole draft unchanged. Attachment requires a connected peer with file support.
 9. Incoming files appear inside their messages. Press **Сохранить…** and choose a destination, or **Отклонить**. **Отменить передачу** cancels an outgoing offer or an active transfer. Chat stays available during transfers.
 
 Files travel in bounded 32 KiB chunks over the existing TCP connection. Both computers must run a version with file support; older versions can still exchange text. Up to 16 incoming and 16 outgoing offers/transfers are pending at once, with a maximum of 1 TiB per file. A transfer stalls out after 45 seconds without incoming file data or save confirmation. Files are written to a temporary file beside the approved destination and moved into place only after all declared bytes arrive. Existing destinations are replaced only after the Save dialog's overwrite confirmation; cancellation or disconnect preserves them and removes partial files. Files are never opened or executed automatically. Interrupted transfers cannot be resumed.

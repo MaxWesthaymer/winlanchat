@@ -208,7 +208,8 @@
                 </ScrollViewer>
             </Border>
 
-            <Grid Grid.Column="1" Margin="28,0">
+            <Grid x:Name="ChatDropTarget" Grid.Column="1" Margin="28,0" Background="Transparent"
+                  AllowDrop="True" behaviors:FileDrop.Command="{Binding DropFileCommand}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="90"/>
                     <RowDefinition Height="Auto"/>
@@ -344,17 +345,27 @@
                 </Grid>
 
                 <StackPanel Grid.Row="3" Margin="0,18,0,18">
-                    <Border Background="#222C3D" CornerRadius="8" Padding="12,8" Margin="0,0,0,8"
-                            Visibility="{Binding HasDraftAttachment, Converter={StaticResource BoolVisibility}}">
-                        <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="✕" Command="{Binding RemoveAttachmentCommand}"
-                                    Padding="9,5" Margin="12,0,0,0" AutomationProperties.Name="Убрать прикреплённый файл"/>
-                            <TextBlock DockPanel.Dock="Right" Text="{Binding DraftAttachmentSize}" VerticalAlignment="Center"
-                                       Foreground="{StaticResource MutedBrush}" Margin="12,0,0,0" FontSize="12"/>
-                            <TextBlock Text="{Binding DraftAttachmentName}" TextTrimming="CharacterEllipsis"
-                                       ToolTip="{Binding DraftAttachmentName}" VerticalAlignment="Center" FontSize="13"/>
-                        </DockPanel>
-                    </Border>
+                    <ScrollViewer MaxHeight="144" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                  Visibility="{Binding HasDraftAttachment, Converter={StaticResource BoolVisibility}}">
+                        <ItemsControl ItemsSource="{Binding DraftAttachments}" AutomationProperties.Name="Прикреплённые файлы">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#222C3D" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="✕"
+                                                    Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" Padding="9,5" Margin="12,0,0,0"
+                                                    AutomationProperties.Name="Убрать прикреплённый файл"/>
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding FileSize}" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource MutedBrush}" Margin="12,0,0,0" FontSize="12"/>
+                                            <TextBlock Text="{Binding FileName}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Path}" VerticalAlignment="Center" FontSize="13"/>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                     <Border Background="#1A2230" CornerRadius="12" BorderBrush="#303B4F" BorderThickness="1" Padding="12">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -364,8 +375,8 @@
                             </Grid.ColumnDefinitions>
                             <Button Content="＋" FontSize="23" Command="{Binding AttachFileCommand}" Padding="10,4"
                                     Background="Transparent" VerticalAlignment="Bottom" Margin="0,0,4,0"
-                                    ToolTip="Прикрепить файл" AutomationProperties.Name="Прикрепить файл"/>
-                            <TextBox Grid.Column="1" Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConnected}"
+                                    ToolTip="Прикрепить файлы или перетащить их в чат" AutomationProperties.Name="Прикрепить файлы"/>
+                            <TextBox x:Name="MessageDraftInput" Grid.Column="1" Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConnected}"
                                      behaviors:MessageInput.SendOnEnterCommand="{Binding SendCommand}"
                                      MaxLength="8000" AcceptsReturn="True" TextWrapping="Wrap"
                                      MinHeight="58" MaxHeight="150" VerticalScrollBarVisibility="Auto"
@@ -382,6 +393,17 @@
                                    FontSize="11" Foreground="{StaticResource MutedBrush}"/>
                     </DockPanel>
                 </StackPanel>
+                <Border Grid.RowSpan="4" Background="#EF1D3033" BorderBrush="{StaticResource AccentBrush}"
+                        BorderThickness="2" CornerRadius="12" Margin="0,12" IsHitTestVisible="False"
+                        Visibility="{Binding ElementName=ChatDropTarget, Path=(behaviors:FileDrop.IsDragOver), Converter={StaticResource BoolVisibility}}">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
+                        <TextBlock Text="Отпустите файлы, чтобы прикрепить" FontSize="20" FontWeight="SemiBold"
+                                   TextAlignment="Center" TextWrapping="Wrap" Foreground="{StaticResource AccentBrush}"/>
+                        <TextBlock Text="До 16 файлов · Отправка после нажатия «Отправить»"
+                                   Margin="0,12,0,0" TextAlignment="Center" TextWrapping="Wrap"
+                                   Foreground="{StaticResource MutedBrush}"/>
+                    </StackPanel>
+                </Border>
             </Grid>
         </Grid>
 

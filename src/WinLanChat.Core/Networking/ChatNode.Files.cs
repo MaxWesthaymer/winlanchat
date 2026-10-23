@@ -6,7 +6,7 @@ namespace WinLanChat.Core.Networking;
 
 public sealed partial class ChatNode
 {
-    private const int MaximumPendingTransfers = 16;
+    public const int MaximumPendingTransfers = 16;
     private readonly Dictionary<Guid, OutgoingTransfer> _outgoingFiles = [];
     private readonly Dictionary<Guid, IncomingTransfer> _incomingFiles = [];
 

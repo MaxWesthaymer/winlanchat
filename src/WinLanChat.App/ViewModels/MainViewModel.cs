@@ -22,8 +22,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private bool _startWithWindows;
     private readonly Dictionary<Guid, FileAttachmentViewModel> _attachments = [];
     private readonly HashSet<Task> _fileTasks = [];
-    private string? _attachmentPath;
-    private long _attachmentLength;
+    private bool _isAttachingFiles;
     private readonly CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _connecting;
     private ChatNode? _node;
@@ -69,9 +68,18 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RefreshPeersCommand = new AsyncCommand(RefreshPeersAsync, ReportError,
             () => IsListening && !_isStarting && !IsRefreshing && !_closed);
         SendCommand = new AsyncCommand(SendAsync, ReportError,
-            () => IsConnected && (!string.IsNullOrWhiteSpace(Draft) || HasDraftAttachment) && Draft.Length <= ChatNode.MaximumMessageLength);
-        AttachFileCommand = new AsyncCommand(AttachFileAsync, ReportError, () => IsConnected && _node?.PeerSupportsFiles == true);
-        RemoveAttachmentCommand = new RelayCommand(() => SetAttachment(null), () => HasDraftAttachment);
+            () => IsConnected && !_isAttachingFiles && (!string.IsNullOrWhiteSpace(Draft) || HasDraftAttachment)
+                && Draft.Length <= ChatNode.MaximumMessageLength);
+        AttachFileCommand = new AsyncCommand(AttachFileAsync, ReportError, () => CanAttachFile && !_isAttachingFiles);
+        DropFileCommand = new AsyncCommand(parameter => AttachFilesAsync((string[])parameter!), ReportError,
+            parameter => CanAttachFile && !_isAttachingFiles && parameter is string[] { Length: > 0 });
+        RemoveAttachmentCommand = new RelayCommand(parameter => DraftAttachments.Remove((DraftAttachmentViewModel)parameter!),
+            parameter => parameter is DraftAttachmentViewModel attachment && DraftAttachments.Contains(attachment));
+        DraftAttachments.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasDraftAttachment));
+            RefreshCommands();
+        };
         DisconnectCommand = new RelayCommand(() => _node?.Disconnect(), () => IsConnected);
         CancelConnectCommand = new RelayCommand(() => _connecting?.Cancel(), () => IsConnecting);
         DismissErrorCommand = new RelayCommand(() => ErrorMessage = "");
@@ -124,10 +132,11 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         : $"Найдено: {Peers.Count}. Список обновляется автоматически.";
     public AsyncCommand SendCommand { get; }
     public AsyncCommand AttachFileCommand { get; }
+    public AsyncCommand DropFileCommand { get; }
+    private bool CanAttachFile => !_closed && IsConnected && _node?.PeerSupportsFiles == true;
     public RelayCommand RemoveAttachmentCommand { get; }
-    public bool HasDraftAttachment => _attachmentPath is not null;
-    public string DraftAttachmentName => _attachmentPath is null ? "" : Path.GetFileName(_attachmentPath);
-    public string DraftAttachmentSize => FileAttachmentViewModel.FormatSize(_attachmentLength);
+    public ObservableCollection<DraftAttachmentViewModel> DraftAttachments { get; } = [];
+    public bool HasDraftAttachment => DraftAttachments.Count > 0;
     public RelayCommand DisconnectCommand { get; }
     public RelayCommand CancelConnectCommand { get; }
     public RelayCommand DismissErrorCommand { get; }
@@ -508,15 +517,23 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         string text = Draft;
         int conversation = _conversation;
         ErrorMessage = "";
-        if (_attachmentPath is { } path)
+        if (HasDraftAttachment)
         {
+            if (_attachments.Values.Count(attachment => attachment.IsOutgoing) + DraftAttachments.Count > ChatNode.MaximumPendingTransfers)
+                throw new InvalidOperationException($"Одновременно можно передавать до {ChatNode.MaximumPendingTransfers} файлов. Дождитесь завершения текущих передач или уберите часть вложений.");
             ChatNode node = _node;
-            var offer = new FileOffer(Guid.NewGuid(), text, Path.GetFileName(path), _attachmentLength);
-            var attachment = CreateAttachment(node, offer, true);
-            AddMessage(new ChatMessage("Вы", text, true, DateTimeOffset.Now) { Attachment = attachment });
+            var files = DraftAttachments.ToArray();
             Draft = "";
-            SetAttachment(null);
-            TrackFileTask(SendAttachmentAsync(node, attachment, path));
+            DraftAttachments.Clear();
+            for (int i = 0; i < files.Length; i++)
+            {
+                DraftAttachmentViewModel file = files[i];
+                string caption = i == 0 ? text : "";
+                var offer = new FileOffer(Guid.NewGuid(), caption, file.FileName, file.Length);
+                var attachment = CreateAttachment(node, offer, true);
+                AddMessage(new ChatMessage("Вы", caption, true, DateTimeOffset.Now) { Attachment = attachment });
+                TrackFileTask(SendAttachmentAsync(node, attachment, file.Path));
+            }
             return;
         }
         await _node.SendAsync(text, _lifetime.Token);
@@ -531,23 +548,47 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private async Task AttachFileAsync()
     {
         int conversation = _conversation;
-        if (_fileDialogs.ChooseAttachment() is { } path)
-        {
-            long length = await Task.Run(() => new FileInfo(path).Length, _lifetime.Token);
-            if (length > 1L << 40) throw new IOException("Размер файла превышает 1 ТБ.");
-            if (_closed || !IsConnected || conversation != _conversation) return;
-            _attachmentLength = length;
-            SetAttachment(path);
-        }
+        if (_fileDialogs.ChooseAttachments() is { Length: > 0 } paths && CanAttachFile && conversation == _conversation)
+            await AttachFilesAsync(paths);
     }
 
-    private void SetAttachment(string? path)
+    private async Task AttachFilesAsync(string[] paths)
     {
-        _attachmentPath = path;
-        OnPropertyChanged(nameof(HasDraftAttachment));
-        OnPropertyChanged(nameof(DraftAttachmentName));
-        OnPropertyChanged(nameof(DraftAttachmentSize));
+        ErrorMessage = "";
+        int conversation = _conversation;
+        _isAttachingFiles = true;
         RefreshCommands();
+        try
+        {
+            string[] requested = paths.ToArray();
+            var files = await Task.Run(() =>
+            {
+                var uniquePaths = requested.Select(Path.GetFullPath).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                if (uniquePaths.Length > ChatNode.MaximumPendingTransfers)
+                    throw new IOException($"Можно прикрепить до {ChatNode.MaximumPendingTransfers} файлов за раз.");
+                return uniquePaths.Select(path =>
+                {
+                    _lifetime.Token.ThrowIfCancellationRequested();
+                    if ((File.GetAttributes(path) & FileAttributes.Directory) != 0)
+                        throw new IOException("Прикрепите файлы. Передача папок не поддерживается.");
+                    long length = new FileInfo(path).Length;
+                    if (length > 1L << 40) throw new IOException("Размер файла превышает 1 ТБ.");
+                    return new DraftAttachmentViewModel(path, length);
+                }).ToArray();
+            }, _lifetime.Token);
+            if (!CanAttachFile || conversation != _conversation) return;
+            var existing = DraftAttachments.Select(file => file.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var added = files.Where(file => !existing.Contains(file.Path)).ToArray();
+            if (DraftAttachments.Count + added.Length > ChatNode.MaximumPendingTransfers)
+                throw new IOException($"В черновике может быть до {ChatNode.MaximumPendingTransfers} файлов. Уберите часть вложений.");
+            foreach (var file in added)
+                DraftAttachments.Add(file);
+        }
+        finally
+        {
+            _isAttachingFiles = false;
+            RefreshCommands();
+        }
     }
 
     private FileAttachmentViewModel CreateAttachment(ChatNode node, FileOffer offer, bool outgoing)
@@ -627,7 +668,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             _conversation++;
             Messages.Clear();
             Draft = "";
-            SetAttachment(null);
+            DraftAttachments.Clear();
             ErrorMessage = "";
         }
         Status = peer is null ? "Собеседник отключился" : "Соединение установлено";
@@ -699,6 +740,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RefreshPeersCommand.Refresh();
         SendCommand.Refresh();
         AttachFileCommand.Refresh();
+        DropFileCommand.Refresh();
         RemoveAttachmentCommand.Refresh();
         DisconnectCommand.Refresh();
         CancelConnectCommand.Refresh();

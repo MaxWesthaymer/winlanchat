@@ -5,16 +5,16 @@ namespace WinLanChat.App.Services;
 
 public interface IFileDialogs
 {
-    string? ChooseAttachment();
+    string[]? ChooseAttachments();
     string? ChooseDestination(string fileName);
 }
 
 public sealed class FileDialogs : IFileDialogs
 {
-    public string? ChooseAttachment()
+    public string[]? ChooseAttachments()
     {
-        var dialog = new OpenFileDialog { Title = "Прикрепить файл", CheckFileExists = true, Multiselect = false };
-        return Show(dialog) ? dialog.FileName : null;
+        var dialog = new OpenFileDialog { Title = "Прикрепить файлы", CheckFileExists = true, Multiselect = true };
+        return Show(dialog) ? dialog.FileNames : null;
     }
 
     public string? ChooseDestination(string fileName)
