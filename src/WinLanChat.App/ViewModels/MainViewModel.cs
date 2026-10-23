@@ -9,6 +9,7 @@ using WinLanChat.App.Models;
 using WinLanChat.App.Services;
 using WinLanChat.Core.Models;
 using WinLanChat.Core.Networking;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.App.ViewModels;
 
@@ -34,8 +35,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private string _remoteHost = "";
     private string _remotePort = "45832";
     private string _draft = "";
-    private string _status = "Запуск…";
-    private string _localAddresses = "Определение адреса этого компьютера…";
+    private string _status = Strings.Starting;
+    private string _localAddresses = Strings.ResolvingLocalAddress;
     private string _errorMessage = "";
     private PeerInfo? _peer;
     private bool _isListening;
@@ -56,7 +57,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _fileDialogs = fileDialogs ?? new FileDialogs();
         _startupService = startupService;
         ToggleWindowsStartupCommand = new AsyncCommand(ToggleWindowsStartupAsync,
-            ex => ErrorMessage = "Не удалось изменить автозапуск: " + ex.Message,
+            ex => ErrorMessage = Strings.Format(Strings.StartupChangeFailed, ex.Message),
             () => _startupService is not null && _startupLoaded && !_closed);
         ApplyProfileCommand = new AsyncCommand(ApplyProfileAsync, ReportError,
             () => CanEditProfile && CanEditConnection && !IsRefreshing && HasProfileChanges);
@@ -103,10 +104,10 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public bool HasProfileChanges => _settingsNeedSave || !IsListening || _activeProfile is null
         || DisplayName.Trim() != _activeProfile.DisplayName
         || !int.TryParse(LocalPort, out int port) || port != _activeProfile.ListeningPort;
-    public string ProfileHint => _isStarting ? "Применение настроек…"
-        : IsConnected || IsConnecting ? "Чтобы применить изменения, завершите подключение."
-        : HasProfileChanges ? "Изменения вступят в силу после применения."
-        : "Настройки применены.";
+    public string ProfileHint => _isStarting ? Strings.ApplyingSettings
+        : IsConnected || IsConnecting ? Strings.DisconnectToApplySettings
+        : HasProfileChanges ? Strings.UnappliedSettingsHint
+        : Strings.SettingsApplied;
     public string ActiveDisplayName => _activeProfile?.DisplayName ?? DisplayName;
     public DiscoveredPeer? SelectedPeer
     {
@@ -126,10 +127,10 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
     }
     public string DiscoveryStatus => !IsListening
-        ? _isStarting ? "Запуск поиска компьютеров…" : "Приём не запущен. Проверьте имя и порт в настройках."
-        : IsRefreshing ? "Поиск компьютеров…"
-        : Peers.Count == 0 ? "Пока никого нет. Запустите WinLanChat на другом ПК в этой сети."
-        : $"Найдено: {Peers.Count}. Список обновляется автоматически.";
+        ? _isStarting ? Strings.StartingDiscovery : Strings.ListenerNotStartedSettingsHint
+        : IsRefreshing ? Strings.SearchingPeers
+        : Peers.Count == 0 ? Strings.NoPeersFound
+        : Strings.Format(Strings.PeersFound, Peers.Count);
     public AsyncCommand SendCommand { get; }
     public AsyncCommand AttachFileCommand { get; }
     public AsyncCommand DropFileCommand { get; }
@@ -168,7 +169,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             }
         }
     }
-    public string DraftCounter => $"{Draft.Length:N0} / {ChatNode.MaximumMessageLength:N0}";
+    public string DraftCounter => Strings.Format(Strings.DraftCounter, Draft.Length, ChatNode.MaximumMessageLength);
     public string Status { get => _status; private set => Set(ref _status, value); }
     public string LocalAddresses { get => _localAddresses; private set => Set(ref _localAddresses, value); }
     public string ErrorMessage
@@ -211,9 +212,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     }
     public bool IsConnected => _peer is not null;
     public bool CanEditConnection => !_closed && !_isStarting && !IsConnecting && !IsConnected;
-    public string PeerName => _peer?.Name ?? "Ваш следующий разговор";
-    public string PeerAddress => _peer?.Address ?? "Выберите компьютер в списке слева";
-    public string ConnectionLabel => IsConnected ? "На связи" : "Нет подключения";
+    public string PeerName => _peer?.Name ?? Strings.NextConversation;
+    public string PeerAddress => _peer?.Address ?? Strings.SelectComputerHint;
+    public string ConnectionLabel => IsConnected ? Strings.Connected : Strings.NotConnected;
 
     public async Task InitializeAsync()
     {
@@ -229,7 +230,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 catch (OperationCanceledException) when (_closed) { throw; }
                 catch (Exception ex)
                 {
-                    loadError = "Не удалось проверить автозапуск: " + ex.Message;
+                    loadError = Strings.Format(Strings.StartupReadFailed, ex.Message);
                 }
                 _startupLoaded = true;
                 ToggleWindowsStartupCommand.Refresh();
@@ -248,7 +249,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
                 {
                     loadError = string.Join("\n", new[] { loadError,
-                        "Не удалось прочитать настройки. Использованы параметры по умолчанию: " + ex.Message }
+                        Strings.Format(Strings.SettingsReadFailed, ex.Message) }
                         .Where(message => message is not null));
                 }
             }
@@ -261,8 +262,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         {
             if (!IsListening)
             {
-                Status = "Не удалось запустить приём";
-                LocalAddresses = "Приём не запущен. Проверьте имя и порт.";
+                Status = Strings.ListenerStartFailed;
+                LocalAddresses = Strings.ListenerNotStarted;
                 IsSettingsOpen = true;
             }
             ReportError(ex);
@@ -341,19 +342,19 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                     try { await StartAsync(previous); }
                     catch (Exception restoreError) when (!_closed)
                     {
-                        Status = "Не удалось запустить приём";
-                        LocalAddresses = "Приём не запущен. Проверьте имя и порт.";
-                        throw new IOException($"Не удалось применить настройки: {ex.Message}. Не удалось восстановить приём: {restoreError.Message}", restoreError);
+                        Status = Strings.ListenerStartFailed;
+                        LocalAddresses = Strings.ListenerNotStarted;
+                        throw new IOException(Strings.Format(Strings.SettingsApplyAndRestoreFailed, ex.Message, restoreError.Message), restoreError);
                     }
                 }
                 else
                 {
-                    Status = "Не удалось запустить приём";
-                    LocalAddresses = "Приём не запущен. Проверьте имя и порт.";
+                    Status = Strings.ListenerStartFailed;
+                    LocalAddresses = Strings.ListenerNotStarted;
                 }
                 ReportError(ex);
                 if (previous is not null)
-                    ErrorMessage = $"Настройки не применены. {ErrorMessage} Прежние настройки восстановлены.";
+                    ErrorMessage = Strings.Format(Strings.SettingsRestored, ErrorMessage);
                 return;
             }
             DisplayName = requested.DisplayName;
@@ -364,7 +365,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
                     _settingsNeedSave = true;
-                    ErrorMessage = "Настройки применены, но не сохранены для следующего запуска: " + ex.Message;
+                    ErrorMessage = Strings.Format(Strings.SettingsSaveFailed, ex.Message);
                     return;
                 }
             }
@@ -408,8 +409,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _activeProfile = profile;
         RefreshProfile();
         IsListening = true;
-        Status = "Ожидание подключения";
-        LocalAddresses = $"Порт {port}";
+        Status = Strings.WaitingForConnection;
+        LocalAddresses = Strings.Format(Strings.LocalPort, port);
         try
         {
             IPAddress[] addresses = await Dns.GetHostAddressesAsync(Dns.GetHostName(), _lifetime.Token);
@@ -417,10 +418,10 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 .Where(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a))
                 .Select(a => a.ToString()).Distinct());
             LocalAddresses = string.IsNullOrEmpty(list)
-                ? $"LAN-адрес не найден. Порт {port}."
-                : $"{list}  •  порт {port}";
+                ? Strings.Format(Strings.LocalAddressNotFound, port)
+                : Strings.Format(Strings.LocalAddressAndPort, list, port);
         }
-        catch (SocketException) { LocalAddresses = $"Не удалось определить LAN-адрес. Порт {port}."; }
+        catch (SocketException) { LocalAddresses = Strings.Format(Strings.LocalAddressLookupFailed, port); }
         if (!_closed)
             await RefreshPeersAsync();
     }
@@ -451,7 +452,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
         catch (Exception ex) when (ex is SocketException or System.Net.NetworkInformation.NetworkInformationException)
         {
-            ErrorMessage = $"Поиск компьютеров недоступен: {ex.Message}. Проверьте доступ UDP {PeerDiscovery.DiscoveryPort} в брандмауэре.";
+            ErrorMessage = Strings.Format(Strings.DiscoveryUnavailable, ex.Message, PeerDiscovery.DiscoveryPort);
         }
         finally { IsRefreshing = false; }
     }
@@ -494,19 +495,19 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             return;
         ErrorMessage = "";
         IsConnecting = true;
-        Status = "Подключение…";
+        Status = Strings.Connecting;
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
         _connecting = cancellation;
         try { await _node.ConnectAsync(host, port, cancellation.Token); }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested && !_lifetime.IsCancellationRequested)
         {
-            ErrorMessage = "Подключение отменено.";
+            ErrorMessage = Strings.ConnectionCancelled;
         }
         finally
         {
             _connecting = null;
             IsConnecting = false;
-            Status = IsConnected ? "Соединение установлено" : "Ожидание подключения";
+            Status = IsConnected ? Strings.ConnectionEstablished : Strings.WaitingForConnection;
         }
     }
 
@@ -520,7 +521,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         if (HasDraftAttachment)
         {
             if (_attachments.Values.Count(attachment => attachment.IsOutgoing) + DraftAttachments.Count > ChatNode.MaximumPendingTransfers)
-                throw new InvalidOperationException($"Одновременно можно передавать до {ChatNode.MaximumPendingTransfers} файлов. Дождитесь завершения текущих передач или уберите часть вложений.");
+                throw new InvalidOperationException(Strings.Format(Strings.ConcurrentFilesLimit, ChatNode.MaximumPendingTransfers));
             ChatNode node = _node;
             var files = DraftAttachments.ToArray();
             Draft = "";
@@ -531,7 +532,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 string caption = i == 0 ? text : "";
                 var offer = new FileOffer(Guid.NewGuid(), caption, file.FileName, file.Length);
                 var attachment = CreateAttachment(node, offer, true);
-                AddMessage(new ChatMessage("Вы", caption, true, DateTimeOffset.Now) { Attachment = attachment });
+                AddMessage(new ChatMessage(Strings.SelfAuthor, caption, true, DateTimeOffset.Now) { Attachment = attachment });
                 TrackFileTask(SendAttachmentAsync(node, attachment, file.Path));
             }
             return;
@@ -539,7 +540,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         await _node.SendAsync(text, _lifetime.Token);
         if (conversation == _conversation)
         {
-            AddMessage(new ChatMessage("Вы", text, true, DateTimeOffset.Now));
+            AddMessage(new ChatMessage(Strings.SelfAuthor, text, true, DateTimeOffset.Now));
             if (Draft == text)
                 Draft = "";
         }
@@ -565,14 +566,14 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             {
                 var uniquePaths = requested.Select(Path.GetFullPath).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 if (uniquePaths.Length > ChatNode.MaximumPendingTransfers)
-                    throw new IOException($"Можно прикрепить до {ChatNode.MaximumPendingTransfers} файлов за раз.");
+                    throw new IOException(Strings.Format(Strings.AttachmentBatchLimit, ChatNode.MaximumPendingTransfers));
                 return uniquePaths.Select(path =>
                 {
                     _lifetime.Token.ThrowIfCancellationRequested();
                     if ((File.GetAttributes(path) & FileAttributes.Directory) != 0)
-                        throw new IOException("Прикрепите файлы. Передача папок не поддерживается.");
+                        throw new IOException(Strings.FoldersNotSupported);
                     long length = new FileInfo(path).Length;
-                    if (length > 1L << 40) throw new IOException("Размер файла превышает 1 ТБ.");
+                    if (length > 1L << 40) throw new IOException(Strings.FileTooLarge);
                     return new DraftAttachmentViewModel(path, length);
                 }).ToArray();
             }, _lifetime.Token);
@@ -580,7 +581,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             var existing = DraftAttachments.Select(file => file.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var added = files.Where(file => !existing.Contains(file.Path)).ToArray();
             if (DraftAttachments.Count + added.Length > ChatNode.MaximumPendingTransfers)
-                throw new IOException($"В черновике может быть до {ChatNode.MaximumPendingTransfers} файлов. Уберите часть вложений.");
+                throw new IOException(Strings.Format(Strings.DraftFilesLimit, ChatNode.MaximumPendingTransfers));
             foreach (var file in added)
                 DraftAttachments.Add(file);
         }
@@ -660,7 +661,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private void UpdateConnection(PeerInfo? peer)
     {
         foreach (var attachment in _attachments.Values)
-            attachment.Update(new(attachment.Id, FileTransferState.Failed, Error: "Соединение закрыто."));
+            attachment.Update(new(attachment.Id, FileTransferState.Failed, Error: Strings.ConnectionClosed));
         _attachments.Clear();
         _peer = peer;
         if (peer is not null)
@@ -671,7 +672,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             DraftAttachments.Clear();
             ErrorMessage = "";
         }
-        Status = peer is null ? "Собеседник отключился" : "Соединение установлено";
+        Status = peer is null ? Strings.PeerDisconnectedStatus : Strings.ConnectionEstablished;
         OnPropertyChanged(nameof(IsConnected));
         OnPropertyChanged(nameof(CanEditConnection));
         OnPropertyChanged(nameof(PeerName));
@@ -717,18 +718,18 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             return;
         ErrorMessage = ex switch
         {
-            OperationCanceledException when _connecting?.IsCancellationRequested == true => "Подключение отменено.",
-            OperationCanceledException => "Операция отменена или превышено время ожидания.",
-            SocketException { SocketErrorCode: SocketError.AddressAlreadyInUse } => "Порт уже занят. Выберите другой порт.",
-            SocketException { SocketErrorCode: SocketError.ConnectionRefused } => "Компьютер отклонил подключение. Проверьте адрес, порт и запуск приложения.",
-            SocketException => "Не удалось подключиться. Проверьте адрес, локальную сеть и брандмауэр Windows.",
+            OperationCanceledException when _connecting?.IsCancellationRequested == true => Strings.ConnectionCancelled,
+            OperationCanceledException => Strings.OperationCancelledOrTimedOut,
+            SocketException { SocketErrorCode: SocketError.AddressAlreadyInUse } => Strings.PortAlreadyInUse,
+            SocketException { SocketErrorCode: SocketError.ConnectionRefused } => Strings.ConnectionRefused,
+            SocketException => Strings.ConnectionFailed,
             _ => ex.Message
         };
     }
 
     private static int ParsePort(string text) =>
         int.TryParse(text, out int port) && port is >= 1 and <= 65535
-            ? port : throw new ArgumentException("Порт должен быть числом от 1 до 65535.");
+            ? port : throw new ArgumentException(Strings.InvalidPort);
 
     private void RefreshCommands()
     {

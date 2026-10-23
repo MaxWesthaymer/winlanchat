@@ -1,5 +1,6 @@
 using WinLanChat.App.Infrastructure;
 using WinLanChat.Core.Models;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.App.ViewModels;
 
@@ -35,12 +36,12 @@ public sealed class FileAttachmentViewModel : ObservableObject
     public string SavedLocation => State == FileTransferState.Completed && !IsOutgoing ? SavedPath ?? "" : "";
     public string Status => State switch
     {
-        FileTransferState.Waiting => IsOutgoing ? "Ожидание согласия получателя…" : "Сохранить файл на этот компьютер?",
-        FileTransferState.Transferring => $"{(IsOutgoing ? "Отправка" : "Получение")} · {Progress:0}% · {FormatSize(_bytesTransferred)} / {FileSize}",
-        FileTransferState.Completed => IsOutgoing ? "Файл передан" : "Файл сохранён",
-        FileTransferState.Rejected => "Файл отклонён",
-        FileTransferState.Cancelled => "Передача отменена",
-        _ => "Ошибка передачи: " + _error
+        FileTransferState.Waiting => IsOutgoing ? Strings.WaitingForFileAcceptance : Strings.SaveIncomingFilePrompt,
+        FileTransferState.Transferring => Strings.Format(Strings.TransferStatus, IsOutgoing ? Strings.SendingFile : Strings.ReceivingFile, Progress, FormatSize(_bytesTransferred), FileSize),
+        FileTransferState.Completed => IsOutgoing ? Strings.FileSent : Strings.FileSaved,
+        FileTransferState.Rejected => Strings.FileRejected,
+        FileTransferState.Cancelled => Strings.TransferCancelled,
+        _ => Strings.Format(Strings.TransferFailed, _error)
     };
     public AsyncCommand SaveCommand { get; }
     public AsyncCommand RejectCommand { get; }
@@ -63,9 +64,9 @@ public sealed class FileAttachmentViewModel : ObservableObject
 
     public static string FormatSize(long bytes) => bytes switch
     {
-        < 1024 => $"{bytes} Б",
-        < 1024 * 1024 => $"{bytes / 1024d:0.#} КБ",
-        < 1024L * 1024 * 1024 => $"{bytes / (1024d * 1024):0.#} МБ",
-        _ => $"{bytes / (1024d * 1024 * 1024):0.##} ГБ"
+        < 1024 => Strings.Format(Strings.SizeBytes, bytes),
+        < 1024 * 1024 => Strings.Format(Strings.SizeKilobytes, bytes / 1024d),
+        < 1024L * 1024 * 1024 => Strings.Format(Strings.SizeMegabytes, bytes / (1024d * 1024)),
+        _ => Strings.Format(Strings.SizeGigabytes, bytes / (1024d * 1024 * 1024))
     };
 }

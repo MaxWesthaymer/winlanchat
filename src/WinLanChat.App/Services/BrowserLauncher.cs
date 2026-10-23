@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.App.Services;
 
@@ -11,7 +12,7 @@ public static class BrowserLauncher
     public static void Open(Uri address)
     {
         if (!IsWebAddress(address))
-            throw new ArgumentException("Можно открыть только веб-ссылку HTTP или HTTPS.", nameof(address));
+            throw new ArgumentException(Strings.WebLinksOnly, nameof(address));
 
         using Process? process = Process.Start(new ProcessStartInfo(address.AbsoluteUri) { UseShellExecute = true });
     }

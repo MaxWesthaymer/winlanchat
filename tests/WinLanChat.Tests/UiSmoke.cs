@@ -28,6 +28,7 @@ internal static class UiSmoke
                         var window = (WinLanChat.App.MainWindow)application.MainWindow;
                         var viewModel = (MainViewModel)window.DataContext;
                         runningViewModel = viewModel;
+                        LocalizationChecks.CheckWindow(window);
                         MessageLinkChecks.CheckRendering(window);
                         // Exercise the actual application lifecycle without a start command.
                         await WaitUntilAsync(() => viewModel.IsListening || viewModel.HasError);

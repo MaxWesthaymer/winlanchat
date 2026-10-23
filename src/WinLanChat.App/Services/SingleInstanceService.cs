@@ -1,3 +1,5 @@
+using WinLanChat.Core.Localization;
+
 namespace WinLanChat.App.Services;
 
 /// <summary>Reserves one messenger instance across Windows sessions and signals repeat launches.</summary>
@@ -58,7 +60,7 @@ internal sealed class SingleInstanceService : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_activationWait is not null)
-            throw new InvalidOperationException("An activation listener is already registered.");
+            throw new InvalidOperationException(Strings.ActivationListenerAlreadyRegistered);
 
         _activationWait = ThreadPool.RegisterWaitForSingleObject(_activation,
             (_, _) => activate(), null, Timeout.Infinite, executeOnlyOnce: false);

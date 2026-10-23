@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using WinLanChat.Core.Models;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.Core.Networking;
 
@@ -24,7 +25,7 @@ public sealed partial class ChatNode : IAsyncDisposable
     public ChatNode(string name)
     {
         if (!ChatProtocol.IsValidName(name))
-            throw new ArgumentException("Имя должно содержать от 1 до 64 символов без управляющих знаков.", nameof(name));
+            throw new ArgumentException(Strings.InvalidDisplayName, nameof(name));
         _name = name.Trim();
     }
 
@@ -42,7 +43,7 @@ public sealed partial class ChatNode : IAsyncDisposable
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             if (_listener is not null)
-                throw new InvalidOperationException("Приём подключений уже запущен.");
+                throw new InvalidOperationException(Strings.ListenerAlreadyStarted);
             var listener = new TcpListener(IPAddress.Any, port);
             listener.Start(8);
             _listener = listener;
@@ -55,12 +56,12 @@ public sealed partial class ChatNode : IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(host);
         if (host.Length > 253 || port is < 1 or > 65535)
-            throw new ArgumentException("Проверьте адрес и порт собеседника.");
+            throw new ArgumentException(Strings.InvalidPeerAddress);
         var client = new TcpClient { NoDelay = true };
         if (!TryReserve(client))
         {
             client.Dispose();
-            throw new InvalidOperationException("Завершите текущее подключение перед новым.");
+            throw new InvalidOperationException(Strings.ConnectionAlreadyActive);
         }
         Task task = ConnectCoreAsync(client, host, port, cancellationToken);
         Track(task);
@@ -87,7 +88,7 @@ public sealed partial class ChatNode : IAsyncDisposable
     public async Task SendAsync(string text, CancellationToken cancellationToken = default)
     {
         if (!ChatProtocol.IsValidText(text))
-            throw new ArgumentException($"Сообщение должно содержать от 1 до {MaximumMessageLength} символов.", nameof(text));
+            throw new ArgumentException(Strings.Format(Strings.InvalidMessageLength, MaximumMessageLength), nameof(text));
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token, cancellationToken);
         await _sendGate.WaitAsync(linked.Token).ConfigureAwait(false);
         TcpClient? client = null;
@@ -96,7 +97,7 @@ public sealed partial class ChatNode : IAsyncDisposable
             lock (_sync)
                 client = _connectedClient;
             if (client is null)
-                throw new InvalidOperationException("Собеседник не подключён.");
+                throw new InvalidOperationException(Strings.PeerNotConnected);
             linked.CancelAfter(TimeSpan.FromSeconds(15));
             await ChatProtocol.WriteAsync(client.GetStream(), new WireMessage("chat", Text: text), linked.Token)
                 .ConfigureAwait(false);
@@ -144,7 +145,7 @@ public sealed partial class ChatNode : IAsyncDisposable
         catch (Exception ex) when (_shutdown.IsCancellationRequested && IsNetworkError(ex)) { }
         catch (Exception ex) when (IsNetworkError(ex))
         {
-            Error?.Invoke("Ошибка приёма подключений: " + ex.Message);
+            Error?.Invoke(Strings.Format(Strings.ListenerFailed, ex.Message));
         }
     }
 
@@ -163,7 +164,7 @@ public sealed partial class ChatNode : IAsyncDisposable
         {
             Release(client);
             if (!_shutdown.IsCancellationRequested)
-                Error?.Invoke("Не удалось принять подключение: " + ex.Message);
+                Error?.Invoke(Strings.Format(Strings.AcceptConnectionFailed, ex.Message));
         }
     }
 
@@ -173,7 +174,7 @@ public sealed partial class ChatNode : IAsyncDisposable
         await ChatProtocol.WriteAsync(stream, new WireMessage("hello", Name: _name, SupportsFiles: true), cancellationToken).ConfigureAwait(false);
         WireMessage hello = await ChatProtocol.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
         if (hello.Kind != "hello" || hello.Version != 1 || !ChatProtocol.IsValidName(hello.Name))
-            throw new InvalidDataException("Собеседник использует несовместимый протокол или недопустимое имя.");
+            throw new InvalidDataException(Strings.IncompatiblePeer);
         lock (_sync)
         {
             _shutdown.Token.ThrowIfCancellationRequested();
@@ -192,18 +193,18 @@ public sealed partial class ChatNode : IAsyncDisposable
             {
                 WireMessage message = await ChatProtocol.ReadAsync(stream, _shutdown.Token).ConfigureAwait(false);
                 if (message.Version != 1)
-                    throw new InvalidDataException("Получено недопустимое сообщение.");
+                    throw new InvalidDataException(Strings.InvalidMessage);
                 if (message.Kind == "chat" && ChatProtocol.IsValidText(message.Text))
                     MessageReceived?.Invoke(message.Text!);
                 else if (!await HandleFileMessageAsync(client, message).ConfigureAwait(false))
-                    throw new InvalidDataException("Получено недопустимое сообщение.");
+                    throw new InvalidDataException(Strings.InvalidMessage);
             }
         }
         catch (EndOfStreamException) { }
         catch (Exception ex) when (IsNetworkError(ex))
         {
             if (!_shutdown.IsCancellationRequested && ex is not ObjectDisposedException)
-                Error?.Invoke("Соединение прервано: " + ex.Message);
+                Error?.Invoke(Strings.Format(Strings.ConnectionInterrupted, ex.Message));
         }
         finally
         {

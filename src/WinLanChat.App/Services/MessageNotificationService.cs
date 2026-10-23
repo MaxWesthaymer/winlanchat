@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows;
 using WinLanChat.App.Models;
 using WinLanChat.App.ViewModels;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.App.Services;
 
@@ -28,12 +29,12 @@ internal sealed class MessageNotificationService : IDisposable
 
         string text = message.Text;
         if (message.Attachment is { } attachment)
-            text = message.HasText ? $"Файл: {attachment.FileName} · {message.Text}" : $"Файл: {attachment.FileName}";
+            text = message.HasText ? Strings.Format(Strings.FileNotificationWithCaption, attachment.FileName, message.Text) : Strings.Format(Strings.FileNotification, attachment.FileName);
         try
         {
             // NOTIFYICONDATA reserves 64 UTF-16 characters for the title and 256 for the body,
             // including the terminating null. Treat peer text as plain text, never as markup.
-            _showNotification(Preview(message.Author, 63, "WinLanChat"), Preview(text, 255, "Новое сообщение"));
+            _showNotification(Preview(message.Author, 63, Strings.AppName), Preview(text, 255, Strings.NewMessage));
         }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
         {

@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Navigation;
 using WinLanChat.App.Services;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.App.Behaviors;
 
@@ -51,8 +52,8 @@ public static class MessageLinks
         try { BrowserLauncher.Open(args.Uri); }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or ArgumentException)
         {
-            MessageBox.Show("Не удалось открыть ссылку в браузере. Её можно выделить и скопировать.",
-                "WinLanChat", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(Strings.BrowserOpenFailed,
+                Strings.AppName, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }

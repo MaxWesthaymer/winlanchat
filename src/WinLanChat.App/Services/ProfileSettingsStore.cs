@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using WinLanChat.App.Models;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.App.Services;
 
@@ -16,7 +17,7 @@ public sealed class ProfileSettingsStore(string path)
             await using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
                 4096, FileOptions.Asynchronous);
             var settings = await JsonSerializer.DeserializeAsync<ProfileSettings>(input, cancellationToken: cancellationToken)
-                ?? throw new JsonException("Файл настроек пуст.");
+                ?? throw new JsonException(Strings.EmptySettingsFile);
             settings.Validate();
             return settings;
         }

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows;
 using WinLanChat.App.ViewModels;
 using Forms = System.Windows.Forms;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.App.Services;
 
@@ -25,13 +26,13 @@ internal sealed class SystemTrayService : IDisposable
             new Uri("pack://application:,,,/WinLanChat.App;component/Assets/WinLanChat.ico"))!.Stream;
         _icon = new Icon(stream, new System.Drawing.Size(32, 32));
         _menu = new Forms.ContextMenuStrip();
-        _menu.Items.Add("Открыть WinLanChat", null, (_, _) => RestoreWindow());
+        _menu.Items.Add(Strings.OpenApplication, null, (_, _) => RestoreWindow());
         _menu.Items.Add(new Forms.ToolStripSeparator());
-        _menu.Items.Add("Выход", null, (_, _) => RequestExit());
+        _menu.Items.Add(Strings.Exit, null, (_, _) => RequestExit());
         _notifyIcon = new Forms.NotifyIcon
         {
             Icon = _icon,
-            Text = "WinLanChat — работает в локальной сети",
+            Text = Strings.TrayTooltip,
             ContextMenuStrip = _menu,
             Visible = true
         };

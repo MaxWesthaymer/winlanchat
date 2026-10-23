@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Copy" xml:space="preserve">
+    <value>Копировать</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Выделить всё</value>
+  </data>
+  <data name="AppTagline" xml:space="preserve">
+    <value>Общение в вашей локальной сети</value>
+  </data>
+  <data name="DirectConnection" xml:space="preserve">
+    <value>Прямое подключение</value>
+  </data>
+  <data name="YourComputer" xml:space="preserve">
+    <value>ВАШ КОМПЬЮТЕР</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="DisplayName" xml:space="preserve">
+    <value>Имя в чате</value>
+  </data>
+  <data name="ListeningPort" xml:space="preserve">
+    <value>Порт приёма</value>
+  </data>
+  <data name="ApplyChanges" xml:space="preserve">
+    <value>Применить изменения</value>
+  </data>
+  <data name="ResetChanges" xml:space="preserve">
+    <value>Отменить изменения</value>
+  </data>
+  <data name="StartWithWindows" xml:space="preserve">
+    <value>Запускать вместе с Windows</value>
+  </data>
+  <data name="StartWithWindowsHint" xml:space="preserve">
+    <value>При входе в вашу учётную запись. Сохраняется сразу.</value>
+  </data>
+  <data name="YourAddress" xml:space="preserve">
+    <value>Ваш адрес</value>
+  </data>
+  <data name="NetworkComputers" xml:space="preserve">
+    <value>КОМПЬЮТЕРЫ В СЕТИ</value>
+  </data>
+  <data name="RefreshPeers" xml:space="preserve">
+    <value>↻  Обновить список</value>
+  </data>
+  <data name="NetworkComputersAccessibleName" xml:space="preserve">
+    <value>Компьютеры в сети</value>
+  </data>
+  <data name="Connect" xml:space="preserve">
+    <value>Подключиться</value>
+  </data>
+  <data name="CancelConnection" xml:space="preserve">
+    <value>Отменить подключение</value>
+  </data>
+  <data name="ManualConnection" xml:space="preserve">
+    <value>Подключение по IP вручную</value>
+  </data>
+  <data name="PeerHost" xml:space="preserve">
+    <value>Адрес собеседника</value>
+  </data>
+  <data name="PeerHostExample" xml:space="preserve">
+    <value>Например: 192.168.1.25</value>
+  </data>
+  <data name="Port" xml:space="preserve">
+    <value>Порт</value>
+  </data>
+  <data name="PeerPort" xml:space="preserve">
+    <value>Порт собеседника</value>
+  </data>
+  <data name="ConnectByIp" xml:space="preserve">
+    <value>Подключиться по IP</value>
+  </data>
+  <data name="ConnectionInstructions" xml:space="preserve">
+    <value>Запустите WinLanChat на обоих ПК. Выберите компьютер в списке и подключитесь с одной стороны.</value>
+  </data>
+  <data name="Disconnect" xml:space="preserve">
+    <value>Отключиться</value>
+  </data>
+  <data name="DismissError" xml:space="preserve">
+    <value>Закрыть сообщение об ошибке</value>
+  </data>
+  <data name="EmptyConversationTitle" xml:space="preserve">
+    <value>Разговор начинается здесь</value>
+  </data>
+  <data name="EmptyConversationHint" xml:space="preserve">
+    <value>Подключите два компьютера в одной сети и отправьте первое сообщение.</value>
+  </data>
+  <data name="Conversation" xml:space="preserve">
+    <value>Переписка</value>
+  </data>
+  <data name="ConversationMessageText" xml:space="preserve">
+    <value>Текст сообщения в переписке</value>
+  </data>
+  <data name="FileTransferProgress" xml:space="preserve">
+    <value>Прогресс передачи файла</value>
+  </data>
+  <data name="SaveFile" xml:space="preserve">
+    <value>Сохранить…</value>
+  </data>
+  <data name="RejectFile" xml:space="preserve">
+    <value>Отклонить</value>
+  </data>
+  <data name="CancelTransfer" xml:space="preserve">
+    <value>Отменить передачу</value>
+  </data>
+  <data name="AttachedFiles" xml:space="preserve">
+    <value>Прикреплённые файлы</value>
+  </data>
+  <data name="RemoveAttachment" xml:space="preserve">
+    <value>Убрать прикреплённый файл</value>
+  </data>
+  <data name="AttachFilesHint" xml:space="preserve">
+    <value>Прикрепить файлы или перетащить их в чат</value>
+  </data>
+  <data name="AttachFiles" xml:space="preserve">
+    <value>Прикрепить файлы</value>
+  </data>
+  <data name="MessageText" xml:space="preserve">
+    <value>Текст сообщения</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Отправить  →</value>
+  </data>
+  <data name="MessageInputHint" xml:space="preserve">
+    <value>Enter — отправить   ·   Shift + Enter — новая строка</value>
+  </data>
+  <data name="DropFilesTitle" xml:space="preserve">
+    <value>Отпустите файлы, чтобы прикрепить</value>
+  </data>
+  <data name="DropFilesHint" xml:space="preserve">
+    <value>До 16 файлов · Отправка после нажатия «Отправить»</value>
+  </data>
+  <data name="Starting" xml:space="preserve">
+    <value>Запуск…</value>
+  </data>
+  <data name="ResolvingLocalAddress" xml:space="preserve">
+    <value>Определение адреса этого компьютера…</value>
+  </data>
+  <data name="ApplyingSettings" xml:space="preserve">
+    <value>Применение настроек…</value>
+  </data>
+  <data name="DisconnectToApplySettings" xml:space="preserve">
+    <value>Чтобы применить изменения, завершите подключение.</value>
+  </data>
+  <data name="UnappliedSettingsHint" xml:space="preserve">
+    <value>Изменения вступят в силу после применения.</value>
+  </data>
+  <data name="SettingsApplied" xml:space="preserve">
+    <value>Настройки применены.</value>
+  </data>
+  <data name="StartingDiscovery" xml:space="preserve">
+    <value>Запуск поиска компьютеров…</value>
+  </data>
+  <data name="ListenerNotStartedSettingsHint" xml:space="preserve">
+    <value>Приём не запущен. Проверьте имя и порт в настройках.</value>
+  </data>
+  <data name="SearchingPeers" xml:space="preserve">
+    <value>Поиск компьютеров…</value>
+  </data>
+  <data name="NoPeersFound" xml:space="preserve">
+    <value>Пока никого нет. Запустите WinLanChat на другом ПК в этой сети.</value>
+  </data>
+  <data name="NextConversation" xml:space="preserve">
+    <value>Ваш следующий разговор</value>
+  </data>
+  <data name="SelectComputerHint" xml:space="preserve">
+    <value>Выберите компьютер в списке слева</value>
+  </data>
+  <data name="Connected" xml:space="preserve">
+    <value>На связи</value>
+  </data>
+  <data name="NotConnected" xml:space="preserve">
+    <value>Нет подключения</value>
+  </data>
+  <data name="ListenerStartFailed" xml:space="preserve">
+    <value>Не удалось запустить приём</value>
+  </data>
+  <data name="ListenerNotStarted" xml:space="preserve">
+    <value>Приём не запущен. Проверьте имя и порт.</value>
+  </data>
+  <data name="WaitingForConnection" xml:space="preserve">
+    <value>Ожидание подключения</value>
+  </data>
+  <data name="Connecting" xml:space="preserve">
+    <value>Подключение…</value>
+  </data>
+  <data name="ConnectionCancelled" xml:space="preserve">
+    <value>Подключение отменено.</value>
+  </data>
+  <data name="ConnectionEstablished" xml:space="preserve">
+    <value>Соединение установлено</value>
+  </data>
+  <data name="SelfAuthor" xml:space="preserve">
+    <value>Вы</value>
+  </data>
+  <data name="FoldersNotSupported" xml:space="preserve">
+    <value>Прикрепите файлы. Передача папок не поддерживается.</value>
+  </data>
+  <data name="FileTooLarge" xml:space="preserve">
+    <value>Размер файла превышает 1 ТБ.</value>
+  </data>
+  <data name="ConnectionClosed" xml:space="preserve">
+    <value>Соединение закрыто.</value>
+  </data>
+  <data name="PeerDisconnectedStatus" xml:space="preserve">
+    <value>Собеседник отключился</value>
+  </data>
+  <data name="OperationCancelledOrTimedOut" xml:space="preserve">
+    <value>Операция отменена или превышено время ожидания.</value>
+  </data>
+  <data name="PortAlreadyInUse" xml:space="preserve">
+    <value>Порт уже занят. Выберите другой порт.</value>
+  </data>
+  <data name="ConnectionRefused" xml:space="preserve">
+    <value>Компьютер отклонил подключение. Проверьте адрес, порт и запуск приложения.</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>Не удалось подключиться. Проверьте адрес, локальную сеть и брандмауэр Windows.</value>
+  </data>
+  <data name="InvalidPort" xml:space="preserve">
+    <value>Порт должен быть числом от 1 до 65535.</value>
+  </data>
+  <data name="WaitingForFileAcceptance" xml:space="preserve">
+    <value>Ожидание согласия получателя…</value>
+  </data>
+  <data name="SaveIncomingFilePrompt" xml:space="preserve">
+    <value>Сохранить файл на этот компьютер?</value>
+  </data>
+  <data name="SendingFile" xml:space="preserve">
+    <value>Отправка</value>
+  </data>
+  <data name="ReceivingFile" xml:space="preserve">
+    <value>Получение</value>
+  </data>
+  <data name="FileSent" xml:space="preserve">
+    <value>Файл передан</value>
+  </data>
+  <data name="FileSaved" xml:space="preserve">
+    <value>Файл сохранён</value>
+  </data>
+  <data name="FileRejected" xml:space="preserve">
+    <value>Файл отклонён</value>
+  </data>
+  <data name="TransferCancelled" xml:space="preserve">
+    <value>Передача отменена</value>
+  </data>
+  <data name="ApplicationPathUnavailable" xml:space="preserve">
+    <value>Не удалось определить путь приложения.</value>
+  </data>
+  <data name="StartupSettingsUnavailable" xml:space="preserve">
+    <value>Не удалось открыть параметры автозапуска.</value>
+  </data>
+  <data name="OpenApplication" xml:space="preserve">
+    <value>Открыть WinLanChat</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Выход</value>
+  </data>
+  <data name="TrayTooltip" xml:space="preserve">
+    <value>WinLanChat — работает в локальной сети</value>
+  </data>
+  <data name="EmptySettingsFile" xml:space="preserve">
+    <value>Файл настроек пуст.</value>
+  </data>
+  <data name="SaveReceivedFile" xml:space="preserve">
+    <value>Сохранить полученный файл</value>
+  </data>
+  <data name="AllFilesFilter" xml:space="preserve">
+    <value>Все файлы (*.*)|*.*</value>
+  </data>
+  <data name="WebLinksOnly" xml:space="preserve">
+    <value>Можно открыть только веб-ссылку HTTP или HTTPS.</value>
+  </data>
+  <data name="NewMessage" xml:space="preserve">
+    <value>Новое сообщение</value>
+  </data>
+  <data name="InvalidDisplayName" xml:space="preserve">
+    <value>Имя должно содержать от 1 до 64 символов без управляющих знаков.</value>
+  </data>
+  <data name="BrowserOpenFailed" xml:space="preserve">
+    <value>Не удалось открыть ссылку в браузере. Её можно выделить и скопировать.</value>
+  </data>
+  <data name="InvalidPeerName" xml:space="preserve">
+    <value>Недопустимое имя участника.</value>
+  </data>
+  <data name="DiscoveryAlreadyStarted" xml:space="preserve">
+    <value>Поиск уже запущен.</value>
+  </data>
+  <data name="DiscoveryNotStarted" xml:space="preserve">
+    <value>Поиск ещё не запущен.</value>
+  </data>
+  <data name="MessageTooLarge" xml:space="preserve">
+    <value>Сообщение превышает допустимый размер.</value>
+  </data>
+  <data name="InvalidFrameSize" xml:space="preserve">
+    <value>Недопустимый размер сетевого сообщения.</value>
+  </data>
+  <data name="EmptyNetworkMessage" xml:space="preserve">
+    <value>Получено пустое сетевое сообщение.</value>
+  </data>
+  <data name="InvalidFileMessage" xml:space="preserve">
+    <value>Недопустимое сообщение с файлом.</value>
+  </data>
+  <data name="InvalidFileName" xml:space="preserve">
+    <value>Недопустимое имя файла.</value>
+  </data>
+  <data name="PeerNotConnected" xml:space="preserve">
+    <value>Собеседник не подключён.</value>
+  </data>
+  <data name="PeerFileSupportRequired" xml:space="preserve">
+    <value>Обновите WinLanChat у собеседника для передачи файлов.</value>
+  </data>
+  <data name="TooManyPendingFiles" xml:space="preserve">
+    <value>Слишком много ожидающих отправки файлов.</value>
+  </data>
+  <data name="AttachedFileChanged" xml:space="preserve">
+    <value>Файл изменился после прикрепления. Прикрепите его снова.</value>
+  </data>
+  <data name="SourceFileChanged" xml:space="preserve">
+    <value>Исходный файл изменился во время отправки.</value>
+  </data>
+  <data name="FileOfferUnavailable" xml:space="preserve">
+    <value>Предложение файла уже недоступно.</value>
+  </data>
+  <data name="FileOfferAlreadyHandled" xml:space="preserve">
+    <value>Предложение файла уже обработано.</value>
+  </data>
+  <data name="DestinationAlreadyExists" xml:space="preserve">
+    <value>Файл с таким именем уже существует.</value>
+  </data>
+  <data name="InvalidTransferId" xml:space="preserve">
+    <value>Недопустимый идентификатор передачи.</value>
+  </data>
+  <data name="InvalidFileOffer" xml:space="preserve">
+    <value>Недопустимое предложение файла.</value>
+  </data>
+  <data name="DuplicateTransferId" xml:space="preserve">
+    <value>Повторный идентификатор передачи.</value>
+  </data>
+  <data name="InvalidFileChunk" xml:space="preserve">
+    <value>Недопустимый блок файла.</value>
+  </data>
+  <data name="FileConsentRequired" xml:space="preserve">
+    <value>Передача файла началась без согласия получателя.</value>
+  </data>
+  <data name="FileExceedsDeclaredSize" xml:space="preserve">
+    <value>Размер файла превышает заявленный.</value>
+  </data>
+  <data name="IncompleteFile" xml:space="preserve">
+    <value>Файл получен не полностью.</value>
+  </data>
+  <data name="PeerDisconnected" xml:space="preserve">
+    <value>Собеседник отключился.</value>
+  </data>
+  <data name="ListenerAlreadyStarted" xml:space="preserve">
+    <value>Приём подключений уже запущен.</value>
+  </data>
+  <data name="InvalidPeerAddress" xml:space="preserve">
+    <value>Проверьте адрес и порт собеседника.</value>
+  </data>
+  <data name="ConnectionAlreadyActive" xml:space="preserve">
+    <value>Завершите текущее подключение перед новым.</value>
+  </data>
+  <data name="IncompatiblePeer" xml:space="preserve">
+    <value>Собеседник использует несовместимый протокол или недопустимое имя.</value>
+  </data>
+  <data name="InvalidMessage" xml:space="preserve">
+    <value>Получено недопустимое сообщение.</value>
+  </data>
+  <data name="StartupChangeFailed" xml:space="preserve">
+    <value>Не удалось изменить автозапуск: {0}</value>
+  </data>
+  <data name="StartupReadFailed" xml:space="preserve">
+    <value>Не удалось проверить автозапуск: {0}</value>
+  </data>
+  <data name="SettingsReadFailed" xml:space="preserve">
+    <value>Не удалось прочитать настройки. Использованы параметры по умолчанию: {0}</value>
+  </data>
+  <data name="SettingsApplyAndRestoreFailed" xml:space="preserve">
+    <value>Не удалось применить настройки: {0}. Не удалось восстановить приём: {1}</value>
+  </data>
+  <data name="SettingsRestored" xml:space="preserve">
+    <value>Настройки не применены. {0} Прежние настройки восстановлены.</value>
+  </data>
+  <data name="SettingsSaveFailed" xml:space="preserve">
+    <value>Настройки применены, но не сохранены для следующего запуска: {0}</value>
+  </data>
+  <data name="PeersFound" xml:space="preserve">
+    <value>Найдено: {0}. Список обновляется автоматически.</value>
+  </data>
+  <data name="LocalPort" xml:space="preserve">
+    <value>Порт {0}</value>
+  </data>
+  <data name="LocalAddressNotFound" xml:space="preserve">
+    <value>LAN-адрес не найден. Порт {0}.</value>
+  </data>
+  <data name="LocalAddressAndPort" xml:space="preserve">
+    <value>{0}  •  порт {1}</value>
+  </data>
+  <data name="LocalAddressLookupFailed" xml:space="preserve">
+    <value>Не удалось определить LAN-адрес. Порт {0}.</value>
+  </data>
+  <data name="DiscoveryUnavailable" xml:space="preserve">
+    <value>Поиск компьютеров недоступен: {0}. Проверьте доступ UDP {1} в брандмауэре.</value>
+  </data>
+  <data name="ConcurrentFilesLimit" xml:space="preserve">
+    <value>Одновременно можно передавать до {0} файлов. Дождитесь завершения текущих передач или уберите часть вложений.</value>
+  </data>
+  <data name="AttachmentBatchLimit" xml:space="preserve">
+    <value>Можно прикрепить до {0} файлов за раз.</value>
+  </data>
+  <data name="DraftFilesLimit" xml:space="preserve">
+    <value>В черновике может быть до {0} файлов. Уберите часть вложений.</value>
+  </data>
+  <data name="TransferStatus" xml:space="preserve">
+    <value>{0} · {1:0}% · {2} / {3}</value>
+  </data>
+  <data name="TransferFailed" xml:space="preserve">
+    <value>Ошибка передачи: {0}</value>
+  </data>
+  <data name="SizeBytes" xml:space="preserve">
+    <value>{0} Б</value>
+  </data>
+  <data name="SizeKilobytes" xml:space="preserve">
+    <value>{0:0.#} КБ</value>
+  </data>
+  <data name="SizeMegabytes" xml:space="preserve">
+    <value>{0:0.#} МБ</value>
+  </data>
+  <data name="SizeGigabytes" xml:space="preserve">
+    <value>{0:0.##} ГБ</value>
+  </data>
+  <data name="FileNotificationWithCaption" xml:space="preserve">
+    <value>Файл: {0} · {1}</value>
+  </data>
+  <data name="FileNotification" xml:space="preserve">
+    <value>Файл: {0}</value>
+  </data>
+  <data name="DiscoveryStopped" xml:space="preserve">
+    <value>Поиск компьютеров остановлен: {0}</value>
+  </data>
+  <data name="DiscoveryRefreshFailed" xml:space="preserve">
+    <value>Не удалось обновить список компьютеров: {0}</value>
+  </data>
+  <data name="InvalidMessageLength" xml:space="preserve">
+    <value>Сообщение должно содержать от 1 до {0} символов.</value>
+  </data>
+  <data name="ListenerFailed" xml:space="preserve">
+    <value>Ошибка приёма подключений: {0}</value>
+  </data>
+  <data name="AcceptConnectionFailed" xml:space="preserve">
+    <value>Не удалось принять подключение: {0}</value>
+  </data>
+  <data name="ConnectionInterrupted" xml:space="preserve">
+    <value>Соединение прервано: {0}</value>
+  </data>
+  <data name="DraftCounter" xml:space="preserve">
+    <value>{0:N0} / {1:N0}</value>
+  </data>
+  <data name="AppName" xml:space="preserve">
+    <value>WinLanChat</value>
+  </data>
+  <data name="MessageTimeFormat" xml:space="preserve">
+    <value>HH:mm</value>
+  </data>
+  <data name="PeerDescription" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="ActivationListenerAlreadyRegistered" xml:space="preserve">
+    <value>Обработчик активации уже зарегистрирован.</value>
+  </data>
+</root>

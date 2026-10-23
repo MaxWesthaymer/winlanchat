@@ -1,6 +1,7 @@
 using System.IO;
 using System.Reflection;
 using Microsoft.Win32;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.App.Services;
 
@@ -18,7 +19,7 @@ public sealed class WindowsStartupService : IWindowsStartupService
     private readonly string _command;
 
     public WindowsStartupService() : this(RunKey, CreateLaunchCommand(
-        Environment.ProcessPath ?? throw new IOException("Не удалось определить путь приложения."),
+        Environment.ProcessPath ?? throw new IOException(Strings.ApplicationPathUnavailable),
         Assembly.GetEntryAssembly()?.Location ?? "")) { }
 
     internal WindowsStartupService(string registryPath, string command)
@@ -46,7 +47,7 @@ public sealed class WindowsStartupService : IWindowsStartupService
             : Registry.CurrentUser.OpenSubKey(_registryPath, writable: true);
         cancellationToken.ThrowIfCancellationRequested();
         if (enabled)
-            (key ?? throw new IOException("Не удалось открыть параметры автозапуска."))
+            (key ?? throw new IOException(Strings.StartupSettingsUnavailable))
                 .SetValue(ValueName, _command, RegistryValueKind.String);
         else
             key?.DeleteValue(ValueName, throwOnMissingValue: false);

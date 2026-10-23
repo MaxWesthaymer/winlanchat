@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Text.Json;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.Core.Networking;
 
@@ -19,7 +20,7 @@ internal static class ChatProtocol
     {
         byte[] payload = JsonSerializer.SerializeToUtf8Bytes(message, JsonOptions);
         if (payload.Length > MaximumFrameBytes)
-            throw new InvalidDataException("Сообщение превышает допустимый размер.");
+            throw new InvalidDataException(Strings.MessageTooLarge);
         byte[] header = new byte[sizeof(int)];
         BinaryPrimitives.WriteInt32BigEndian(header, payload.Length);
         await stream.WriteAsync(header, cancellationToken).ConfigureAwait(false);
@@ -32,11 +33,11 @@ internal static class ChatProtocol
         await stream.ReadExactlyAsync(header, cancellationToken).ConfigureAwait(false);
         int size = BinaryPrimitives.ReadInt32BigEndian(header);
         if (size is <= 0 or > MaximumFrameBytes)
-            throw new InvalidDataException("Недопустимый размер сетевого сообщения.");
+            throw new InvalidDataException(Strings.InvalidFrameSize);
         byte[] payload = new byte[size];
         await stream.ReadExactlyAsync(payload, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize<WireMessage>(payload, JsonOptions)
-            ?? throw new InvalidDataException("Получено пустое сетевое сообщение.");
+            ?? throw new InvalidDataException(Strings.EmptyNetworkMessage);
     }
 
     internal static bool IsValidName(string? name) =>

@@ -10,9 +10,17 @@ if (args.Length == 2 && args[0] == "--single-instance-worker")
     return SingleInstanceChecks.RunWorker(args[1]);
 if (args.Length == 1 && args[0] == "--duplicate-app")
     return SingleInstanceChecks.RunDuplicateApplication();
+if (args.Length == 1 && args[0] == "--localization-only")
+{
+    await LocalizationChecks.ResourcesAsync();
+    await LocalizationChecks.WindowAsync().WaitAsync(TimeSpan.FromSeconds(15));
+    Console.WriteLine("PASS  Russian resources, culture fallback, formatted messages and WPF labels");
+    return 0;
+}
 
 var tests = new (string Name, Func<Task> Run)[]
 {
+    ("Russian resources load across Windows languages and preserve formatted values", LocalizationChecks.ResourcesAsync),
     ("Single instance rejects duplicate and concurrent launches, signals activation and recovers after exit or crash", SingleInstanceChecks.LifecycleAsync),
     ("Message links preserve addresses and reject non-web protocols", MessageLinkChecks.ParsingAsync),
     ("Unicode messages in both directions and maximum message size", ExchangeAsync),

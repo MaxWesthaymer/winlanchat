@@ -3,6 +3,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text.Json;
 using WinLanChat.Core.Models;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.Core.Networking;
 
@@ -38,7 +39,7 @@ public sealed class PeerDiscovery : IAsyncDisposable
         Func<IReadOnlyList<IPEndPoint>> targets, TimeSpan announceInterval, TimeSpan expiry, TimeSpan tick)
     {
         if (!ChatProtocol.IsValidName(name))
-            throw new ArgumentException("Недопустимое имя участника.", nameof(name));
+            throw new ArgumentException(Strings.InvalidPeerName, nameof(name));
         if (chatPort is < 1 or > 65535 || discoveryPort is < 0 or > 65535)
             throw new ArgumentOutOfRangeException(nameof(chatPort));
         _name = name.Trim();
@@ -60,7 +61,7 @@ public sealed class PeerDiscovery : IAsyncDisposable
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             if (_udp is not null)
-                throw new InvalidOperationException("Поиск уже запущен.");
+                throw new InvalidOperationException(Strings.DiscoveryAlreadyStarted);
             var udp = new UdpClient(AddressFamily.InterNetwork);
             try
             {
@@ -109,7 +110,7 @@ public sealed class PeerDiscovery : IAsyncDisposable
         await _sendGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            UdpClient udp = _udp ?? throw new InvalidOperationException("Поиск ещё не запущен.");
+            UdpClient udp = _udp ?? throw new InvalidOperationException(Strings.DiscoveryNotStarted);
             await udp.SendAsync(packet, target, cancellationToken).ConfigureAwait(false);
         }
         finally { _sendGate.Release(); }
@@ -171,7 +172,7 @@ public sealed class PeerDiscovery : IAsyncDisposable
             }
         }
         catch (Exception ex) when (_shutdown.IsCancellationRequested && ex is OperationCanceledException or ObjectDisposedException or SocketException) { }
-        catch (SocketException ex) { Error?.Invoke("Поиск компьютеров остановлен: " + ex.Message); }
+        catch (SocketException ex) { Error?.Invoke(Strings.Format(Strings.DiscoveryStopped, ex.Message)); }
     }
 
     private async Task MaintainAsync()
@@ -197,7 +198,7 @@ public sealed class PeerDiscovery : IAsyncDisposable
                 lastAnnouncement = now;
                 try { await BroadcastAsync("query", _shutdown.Token).ConfigureAwait(false); }
                 catch (Exception ex) when (ex is SocketException or NetworkInformationException)
-                { Error?.Invoke("Не удалось обновить список компьютеров: " + ex.Message); }
+                { Error?.Invoke(Strings.Format(Strings.DiscoveryRefreshFailed, ex.Message)); }
             }
         }
         catch (OperationCanceledException) when (_shutdown.IsCancellationRequested) { }

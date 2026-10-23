@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net.Sockets;
 using WinLanChat.Core.Models;
+using WinLanChat.Core.Localization;
 
 namespace WinLanChat.Core.Networking;
 
@@ -43,18 +44,18 @@ public sealed partial class ChatNode
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentNullException.ThrowIfNull(text);
         if (id == Guid.Empty || text.Length > MaximumMessageLength)
-            throw new ArgumentException("Недопустимое сообщение с файлом.");
+            throw new ArgumentException(Strings.InvalidFileMessage);
         string name = Path.GetFileName(path);
         if (!ChatProtocol.IsValidFileName(name))
-            throw new ArgumentException("Недопустимое имя файла.", nameof(path));
+            throw new ArgumentException(Strings.InvalidFileName, nameof(path));
         OutgoingTransfer transfer;
         lock (_sync)
         {
-            TcpClient client = _connectedClient ?? throw new InvalidOperationException("Собеседник не подключён.");
+            TcpClient client = _connectedClient ?? throw new InvalidOperationException(Strings.PeerNotConnected);
             if (!_peerSupportsFiles)
-                throw new InvalidOperationException("Обновите WinLanChat у собеседника для передачи файлов.");
+                throw new InvalidOperationException(Strings.PeerFileSupportRequired);
             if (_outgoingFiles.Count >= MaximumPendingTransfers || _outgoingFiles.ContainsKey(id) || _incomingFiles.ContainsKey(id))
-                throw new InvalidOperationException("Слишком много ожидающих отправки файлов.");
+                throw new InvalidOperationException(Strings.TooManyPendingFiles);
             transfer = new OutgoingTransfer(client, CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token, cancellationToken));
             _outgoingFiles.Add(id, transfer);
         }
@@ -76,9 +77,9 @@ public sealed partial class ChatNode
             await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
                 ChatProtocol.FileChunkBytes, FileOptions.Asynchronous | FileOptions.SequentialScan);
             if (file.Length > ChatProtocol.MaximumFileBytes)
-                throw new ArgumentException("Размер файла превышает 1 ТБ.", nameof(path));
+                throw new ArgumentException(Strings.FileTooLarge, nameof(path));
             if (expectedLength is { } expected && file.Length != expected)
-                throw new IOException("Файл изменился после прикрепления. Прикрепите его снова.");
+                throw new IOException(Strings.AttachedFileChanged);
             cancellation.Token.ThrowIfCancellationRequested();
             await WriteFileFrameAsync(client, new WireMessage("file-offer", Text: text,
                 TransferId: id, FileName: name, FileSize: file.Length)).ConfigureAwait(false);
@@ -96,7 +97,7 @@ public sealed partial class ChatNode
                 int read = await file.ReadAsync(buffer.AsMemory(0, (int)Math.Min(buffer.Length, file.Length - sent)),
                     cancellation.Token).ConfigureAwait(false);
                 if (read == 0)
-                    throw new IOException("Исходный файл изменился во время отправки.");
+                    throw new IOException(Strings.SourceFileChanged);
                 cancellation.Token.ThrowIfCancellationRequested();
                 await WriteFileFrameAsync(client, new WireMessage("file-chunk", TransferId: id,
                     Data: read == buffer.Length ? buffer : buffer[..read])).ConfigureAwait(false);
@@ -132,7 +133,7 @@ public sealed partial class ChatNode
         IncomingTransfer transfer;
         lock (_sync)
             transfer = _incomingFiles.GetValueOrDefault(id)
-                ?? throw new InvalidOperationException("Предложение файла уже недоступно.");
+                ?? throw new InvalidOperationException(Strings.FileOfferUnavailable);
         Task task = AcceptFileCoreAsync(transfer, Path.GetFullPath(destinationPath), overwrite, cancellationToken);
         Track(task);
         return task;
@@ -147,10 +148,10 @@ public sealed partial class ChatNode
         try
         {
             if (transfer.Finished || transfer.DestinationPath is not null)
-                throw new InvalidOperationException("Предложение файла уже обработано.");
+                throw new InvalidOperationException(Strings.FileOfferAlreadyHandled);
             started = true;
             if (!overwrite && File.Exists(destination))
-                throw new IOException("Файл с таким именем уже существует.");
+                throw new IOException(Strings.DestinationAlreadyExists);
             transfer.DestinationPath = destination;
             transfer.Overwrite = overwrite;
             transfer.TemporaryPath = Path.Combine(Path.GetDirectoryName(destination)!, $".winlanchat-{Guid.NewGuid():N}.part");
@@ -220,18 +221,18 @@ public sealed partial class ChatNode
     {
         if (message.Kind is null || !message.Kind.StartsWith("file-", StringComparison.Ordinal)) return false;
         if (!PeerSupportsFiles || message.TransferId is not { } id || id == Guid.Empty)
-            throw new InvalidDataException("Недопустимый идентификатор передачи.");
+            throw new InvalidDataException(Strings.InvalidTransferId);
         if (message.Kind == "file-offer")
         {
             if (!ChatProtocol.IsValidFileName(message.FileName) || message.FileSize is not (>= 0 and <= ChatProtocol.MaximumFileBytes)
                 || message.Text is null || message.Text.Length > MaximumMessageLength || message.Data is not null)
-                throw new InvalidDataException("Недопустимое предложение файла.");
+                throw new InvalidDataException(Strings.InvalidFileOffer);
             var offer = new FileOffer(id, message.Text, message.FileName!, message.FileSize.Value);
             bool full;
             lock (_sync)
             {
                 if (_incomingFiles.ContainsKey(id) || _outgoingFiles.ContainsKey(id))
-                    throw new InvalidDataException("Повторный идентификатор передачи.");
+                    throw new InvalidDataException(Strings.DuplicateTransferId);
                 full = _incomingFiles.Count >= MaximumPendingTransfers;
                 if (!full) _incomingFiles.Add(id, new IncomingTransfer(client, offer));
             }
@@ -266,7 +267,7 @@ public sealed partial class ChatNode
                 return true;
             case "file-chunk":
                 if (message.Data is not { Length: > 0 and <= ChatProtocol.FileChunkBytes })
-                    throw new InvalidDataException("Недопустимый блок файла.");
+                    throw new InvalidDataException(Strings.InvalidFileChunk);
                 break;
             case "file-end": break;
             default: return false;
@@ -278,13 +279,13 @@ public sealed partial class ChatNode
         {
             if (incoming.Finished) return true;
             if (incoming.Stream is null)
-                throw new InvalidDataException("Передача файла началась без согласия получателя.");
+                throw new InvalidDataException(Strings.FileConsentRequired);
             try
             {
                 if (message.Kind == "file-chunk")
                 {
                     if (message.Data!.Length > incoming.Offer.Length - incoming.Received)
-                        throw new InvalidDataException("Размер файла превышает заявленный.");
+                        throw new InvalidDataException(Strings.FileExceedsDeclaredSize);
                     await incoming.Stream.WriteAsync(message.Data, _shutdown.Token).ConfigureAwait(false);
                     incoming.Received += message.Data.Length;
                     incoming.Idle.CancelAfter(TimeSpan.FromSeconds(45));
@@ -297,7 +298,7 @@ public sealed partial class ChatNode
                 else
                 {
                     if (incoming.Received != incoming.Offer.Length)
-                        throw new InvalidDataException("Файл получен не полностью.");
+                        throw new InvalidDataException(Strings.IncompleteFile);
                     await incoming.Stream.FlushAsync(_shutdown.Token).ConfigureAwait(false);
                     await incoming.Stream.DisposeAsync().ConfigureAwait(false);
                     incoming.Stream = null;
@@ -349,7 +350,7 @@ public sealed partial class ChatNode
         try
         {
             lock (_sync)
-                if (!ReferenceEquals(_connectedClient, client)) throw new IOException("Собеседник отключился.");
+                if (!ReferenceEquals(_connectedClient, client)) throw new IOException(Strings.PeerDisconnected);
             // Complete each frame even when the user cancels a transfer, keeping the conversation usable.
             await ChatProtocol.WriteAsync(client.GetStream(), message, timeout.Token).ConfigureAwait(false);
         }
@@ -375,7 +376,7 @@ public sealed partial class ChatNode
         foreach (var transfer in incoming)
         {
             await transfer.Gate.WaitAsync().ConfigureAwait(false);
-            try { await FinishIncomingAsync(transfer, FileTransferState.Failed, "Собеседник отключился.").ConfigureAwait(false); }
+            try { await FinishIncomingAsync(transfer, FileTransferState.Failed, Strings.PeerDisconnected).ConfigureAwait(false); }
             finally { transfer.Gate.Release(); }
         }
     }

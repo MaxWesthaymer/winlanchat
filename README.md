@@ -83,6 +83,18 @@ dotnet run --project tests/WinLanChat.Tests -- --preview artifacts/preview
 - src/WinLanChat.Core — independent protocol, TCP service and models.
 - tests/WinLanChat.Tests — executable networking checks.
 
+## Localization
+
+All application-owned user-facing text is stored in `src/WinLanChat.Core/Localization/russian.resx`.
+Russian is the default and currently the only language, regardless of the Windows display language.
+The resource is embedded in the Core assembly and shared by the UI, view models and networking services.
+Edit the resource values to change text; preserve numbered format placeholders such as `{0}` and `{1:0}`.
+`Strings.cs` provides typed resource access for C# and `x:Static` references in XAML. Add a matching
+property there when adding a new resource key. Numeric formatting follows the current Windows culture.
+Peer-provided names, message contents and operating-system error details are displayed as received.
+Run `dotnet run --project tests/WinLanChat.Tests -- --localization-only` to check resource loading,
+culture fallback, formatted values and WPF labels without starting another messenger instance.
+
 ## Next milestones
 
 1. Local history and packaging.
