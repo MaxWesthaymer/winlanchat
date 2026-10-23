@@ -20,9 +20,17 @@ internal static class UiTrayChecks
             window.WindowState = WindowState.Minimized;
             if (window.IsVisible || closed || !viewModel.IsListening)
                 throw new Exception("Minimizing did not hide the window and preserve the listener.");
-            tray.RestoreWindow();
+            using (var duplicate = SingleInstanceChecks.StartDuplicateApplication())
+            {
+                try
+                {
+                    await SingleInstanceChecks.ExpectExitAsync(duplicate);
+                    await UntilAsync(() => window.IsVisible);
+                }
+                finally { SingleInstanceChecks.Stop(duplicate); }
+            }
             if (!window.IsVisible || window.WindowState != WindowState.Normal)
-                throw new Exception("The tray did not restore the normal window.");
+                throw new Exception("A repeat launch did not restore the normal window from the tray.");
 
             window.WindowState = WindowState.Maximized;
             window.WindowState = WindowState.Minimized;

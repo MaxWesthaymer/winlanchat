@@ -6,8 +6,14 @@ using System.Text;
 using System.Threading.Channels;
 using WinLanChat.Core.Networking;
 
+if (args.Length == 2 && args[0] == "--single-instance-worker")
+    return SingleInstanceChecks.RunWorker(args[1]);
+if (args.Length == 1 && args[0] == "--duplicate-app")
+    return SingleInstanceChecks.RunDuplicateApplication();
+
 var tests = new (string Name, Func<Task> Run)[]
 {
+    ("Single instance rejects duplicate and concurrent launches, signals activation and recovers after exit or crash", SingleInstanceChecks.LifecycleAsync),
     ("Message links preserve addresses and reject non-web protocols", MessageLinkChecks.ParsingAsync),
     ("Unicode messages in both directions and maximum message size", ExchangeAsync),
     ("Concurrent sends preserve complete frames", ConcurrentSendsAsync),
