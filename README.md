@@ -34,6 +34,13 @@ Firewalls must allow UDP port **45831** for discovery and TCP port **45832** for
 - Messages and files are not encrypted, and peer identities are not verified. Use WinLanChat on trusted networks.
 - Interrupted file transfers cannot be resumed. Folders are not supported.
 
+## Windows installer
+
+The **1.0.1** installer includes .NET Desktop Runtime for Windows x64;
+no separate .NET installation or internet connection is required. Setup includes English/Russian UI,
+a destination folder, Start menu and optional desktop shortcuts, and an uninstaller.
+See [installer build instructions](installer/README.md) to generate the setup EXE.
+
 ## Run from source
 
 On Windows, install **.NET SDK 10.0.402** (or a later patch in the 10.0.4xx feature band), then run from the project folder:
