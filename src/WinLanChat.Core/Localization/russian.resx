@@ -55,7 +55,7 @@
     <value>КОМПЬЮТЕРЫ В СЕТИ</value>
   </data>
   <data name="RefreshPeers" xml:space="preserve">
-    <value>↻  Обновить список</value>
+    <value>Обновить список</value>
   </data>
   <data name="NetworkComputersAccessibleName" xml:space="preserve">
     <value>Компьютеры в сети</value>
@@ -85,7 +85,7 @@
     <value>Подключиться по IP</value>
   </data>
   <data name="ConnectionInstructions" xml:space="preserve">
-    <value>Запустите WinLanChat на обоих ПК. Выберите компьютер в списке и подключитесь с одной стороны.</value>
+    <value>Запустите WinLanChat на обоих ПК. Нажмите на компьютер в списке, чтобы подключиться. Достаточно подключения с одной стороны.</value>
   </data>
   <data name="Disconnect" xml:space="preserve">
     <value>Отключиться</value>

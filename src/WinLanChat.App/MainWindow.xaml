@@ -129,12 +129,24 @@
                         </Border>
 
                         <Border Height="1" Background="#2B3445" Margin="0,18"/>
-                        <TextBlock Text="{localization:Text NetworkComputers}" FontSize="11" FontWeight="SemiBold"
-                                   Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12"/>
-                        <Button Content="{localization:Text RefreshPeers}" Command="{Binding RefreshPeersCommand}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{localization:Text NetworkComputers}" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Command="{Binding RefreshPeersCommand}"
+                                    Width="32" Height="32" Padding="0" Background="Transparent"
+                                    ToolTip="{localization:Text RefreshPeers}"
+                                    AutomationProperties.Name="{localization:Text RefreshPeers}">
+                                <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16"/>
+                            </Button>
+                        </Grid>
                         <TextBlock Text="{Binding DiscoveryStatus}" TextWrapping="Wrap" FontSize="12" LineHeight="18"
                                    Foreground="{StaticResource MutedBrush}" Margin="0,10,0,12"/>
                         <ListBox ItemsSource="{Binding Peers}" SelectedItem="{Binding SelectedPeer, Mode=TwoWay}"
+                                 behaviors:ListItemActivation.Command="{Binding ConnectSelectedCommand}"
                                  IsEnabled="{Binding CanEditConnection}" MinHeight="80" MaxHeight="220"
                                  Background="#10151F" BorderThickness="0" Padding="4"
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -147,6 +159,7 @@
                                     <Setter Property="Foreground" Value="#EDF1F7"/>
                                     <Setter Property="Padding" Value="10,10"/>
                                     <Setter Property="Margin" Value="0,0,0,4"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="ListBoxItem">
@@ -169,6 +182,11 @@
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Cursor" Value="Arrow"/>
+                                        </Trigger>
+                                    </Style.Triggers>
                                 </Style>
                             </ListBox.ItemContainerStyle>
                             <ListBox.ItemTemplate>
@@ -181,8 +199,6 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                        <Button Content="{localization:Text Connect}" Command="{Binding ConnectSelectedCommand}"
-                                Style="{StaticResource AccentButton}" Margin="0,12,0,0"/>
                         <Button Content="{localization:Text CancelConnection}" Command="{Binding CancelConnectCommand}" Margin="0,8,0,0"
                                 Visibility="{Binding IsConnecting, Converter={StaticResource BoolVisibility}}"/>
                         <Expander Header="{localization:Text ManualConnection}" Foreground="{StaticResource MutedBrush}" Margin="0,18,0,0">

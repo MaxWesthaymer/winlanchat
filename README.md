@@ -14,7 +14,7 @@ A lightweight Windows messenger for chatting and sharing files over your local n
 
 1. Open WinLanChat on two Windows computers connected to the same local network.
 2. If Windows asks for firewall access, allow WinLanChat on your private network.
-3. Select a computer under **Network computers** and click **Connect**. Connecting from one side is enough.
+3. Click a computer under **Network computers** to connect, or select it with the arrow keys and press **Enter**. Connecting from one side is enough.
 4. Type a message and press **Enter** to send it. Use **Shift+Enter** for a new line.
 5. To share files, drag them into the conversation or click **+**, then press **Send**. The recipient clicks **Save…** to choose a destination.
 
@@ -24,7 +24,7 @@ Closing or minimizing the window keeps WinLanChat running in the system tray. Do
 
 ## Connection help
 
-Both computers must have WinLanChat running. If a computer does not appear, try **Refresh list** or use **Connect by IP manually** in Settings.
+Both computers must have WinLanChat running. If a computer does not appear, click the refresh icon beside **Network computers** or use **Connect by IP manually**.
 
 Firewalls must allow UDP port **45831** for discovery and TCP port **45832** for chat and files (or your chosen listening port). Guest Wi-Fi, VPNs, and networks that isolate devices may prevent connections.
 
