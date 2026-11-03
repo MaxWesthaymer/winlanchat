@@ -3,9 +3,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
-        <SolidColorBrush x:Key="MutedBrush" Color="#8195A8"/>
+        <!-- Mint accents from the application icon over neutral dark surfaces. -->
+        <Color x:Key="BrandAccentColor">#4FC7AA</Color>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource BrandAccentColor}"/>
         <SolidColorBrush x:Key="TextBrush" Color="#EDF1F7"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#64B5EF"/>
+        <SolidColorBrush x:Key="MutedBrush" Color="#919BAE"/>
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#A9B3C2"/>
+        <SolidColorBrush x:Key="CanvasBrush" Color="#10141D"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#171D29"/>
+        <SolidColorBrush x:Key="InputBrush" Color="#222833"/>
+        <SolidColorBrush x:Key="HoverBrush" Color="#233C33"/>
+        <SolidColorBrush x:Key="SelectedBrush" Color="#214A3E"/>
+        <SolidColorBrush x:Key="AvatarBrush" Color="#377965"/>
+        <SolidColorBrush x:Key="SubtleBrush" Color="#222D3C"/>
+        <SolidColorBrush x:Key="MessageBrush" Color="#222C3D"/>
+        <SolidColorBrush x:Key="AttachmentBrush" Color="#18232D"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2B3445"/>
+        <SolidColorBrush x:Key="SelectionBrush" Color="#316452"/>
+        <SolidColorBrush x:Key="AccentTextBrush" Color="#0D2920"/>
+        <SolidColorBrush x:Key="DropOverlayBrush" Color="#EF171D29"/>
         <BooleanToVisibilityConverter x:Key="BoolVisibility"/>
         <Style TargetType="Control">
             <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -16,10 +32,10 @@
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="Background" Value="#242F3D"/>
+            <Setter Property="Background" Value="{StaticResource InputBrush}"/>
             <Setter Property="CaretBrush" Value="{StaticResource AccentBrush}"/>
-            <Setter Property="SelectionBrush" Value="#3D6387"/>
-            <Setter Property="BorderBrush" Value="#344555"/>
+            <Setter Property="SelectionBrush" Value="{StaticResource SelectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -46,8 +62,8 @@
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#EDF1F7"/>
-            <Setter Property="Background" Value="#243442"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
             <Setter Property="Padding" Value="16,11"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
@@ -76,7 +92,7 @@
         </Style>
         <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-            <Setter Property="Foreground" Value="#102438"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentTextBrush}"/>
         </Style>
         <Style x:Key="FieldLabel" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>

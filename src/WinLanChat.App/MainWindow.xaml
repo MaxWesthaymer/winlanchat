@@ -5,12 +5,22 @@
         xmlns:localization="clr-namespace:WinLanChat.App.Localization"
         xmlns:controls="clr-namespace:WinLanChat.App.Controls"
         Title="{localization:Text AppName}" Icon="Assets/WinLanChat.ico" Width="1120" Height="780" MinWidth="760" MinHeight="540"
-        Background="#0E1621" Foreground="#EDF1F7" FontFamily="Segoe UI"
+        Background="{StaticResource CanvasBrush}" Foreground="{StaticResource TextBrush}" FontFamily="Segoe UI"
         WindowStartupLocation="CenterScreen" UseLayoutRounding="True" ThemeMode="Dark">
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding CloseSettingsCommand}"/>
     </Window.InputBindings>
     <Window.Resources>
+        <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{StaticResource BrandAccentColor}"/>
+        <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{StaticResource BrandAccentColor}" Opacity="0.9"/>
+        <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{StaticResource BrandAccentColor}" Opacity="0.8"/>
+        <SolidColorBrush x:Key="AccentFillColorSelectedTextBackgroundBrush" Color="{StaticResource BrandAccentColor}"/>
+        <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="{StaticResource BrandAccentColor}"/>
+        <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="{StaticResource BrandAccentColor}" Opacity="0.9"/>
+        <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="{StaticResource BrandAccentColor}" Opacity="0.8"/>
+        <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="#222833"/>
+        <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="#2A3240"/>
+        <SolidColorBrush x:Key="ControlFillColorTertiaryBrush" Color="#1C2330"/>
         <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Width" Value="40"/>
             <Setter Property="Height" Value="40"/>
@@ -21,7 +31,7 @@
             <Setter Property="FontSize" Value="19"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#243442"/>
+                    <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
                     <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
                 </Trigger>
             </Style.Triggers>
@@ -40,7 +50,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Shell" Property="Background" Value="#243442"/>
+                                <Setter TargetName="Shell" Property="Background" Value="{StaticResource HoverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
                                 <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
@@ -60,7 +70,7 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="SelectionBrush" Value="#347F70"/>
+            <Setter Property="SelectionBrush" Value="{StaticResource SelectionBrush}"/>
             <Setter Property="IsInactiveSelectionHighlightEnabled" Value="True"/>
             <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
             <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
@@ -83,7 +93,7 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Grid Background="#0E1621">
+    <Grid Background="{StaticResource CanvasBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="34"/>
@@ -103,7 +113,7 @@
                 <ColumnDefinition Width="1"/>
                 <ColumnDefinition Width="*" MinWidth="400"/>
             </Grid.ColumnDefinitions>
-            <Grid Background="#17212B">
+            <Grid Background="{StaticResource PanelBrush}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="64"/>
                     <RowDefinition Height="Auto"/>
@@ -120,7 +130,7 @@
                                   ToolTip="{localization:Text Settings}" AutomationProperties.Name="{localization:Text Settings}"/>
                     <Grid Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                         <TextBox Text="{Binding PeerSearch, UpdateSourceTrigger=PropertyChanged}" Height="38"
-                                 Background="#242F3D" BorderThickness="0" BorderBrush="Transparent" Padding="14,8"
+                                 Background="{StaticResource InputBrush}" BorderThickness="0" BorderBrush="Transparent" Padding="14,8"
                                  AutomationProperties.Name="{localization:Text SearchPeers}"/>
                         <TextBlock Text="{localization:Text SearchPeers}" Foreground="{StaticResource MutedBrush}"
                                    Margin="15,0" VerticalAlignment="Center" IsHitTestVisible="False">
@@ -165,10 +175,10 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="Shell" Property="Background" Value="#202E3B"/>
+                                                    <Setter TargetName="Shell" Property="Background" Value="{StaticResource HoverBrush}"/>
                                                 </Trigger>
                                                 <Trigger Property="IsSelected" Value="True">
-                                                    <Setter TargetName="Shell" Property="Background" Value="#2B5278"/>
+                                                    <Setter TargetName="Shell" Property="Background" Value="{StaticResource SelectedBrush}"/>
                                                 </Trigger>
                                                 <Trigger Property="IsKeyboardFocusWithin" Value="True">
                                                     <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
@@ -190,7 +200,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Width="46" Height="46" CornerRadius="23" Background="#3D78A4" Margin="0,0,12,0">
+                                    <Border Width="46" Height="46" CornerRadius="23" Background="{StaticResource AvatarBrush}" Margin="0,0,12,0">
                                         <TextBlock Text="&#xE7F4;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="22"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
@@ -230,7 +240,7 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Border Height="64" Background="#17212B" Padding="24,0"
+                <Border Height="64" Background="{StaticResource PanelBrush}" Padding="24,0"
                         Visibility="{Binding HasConversation, Converter={StaticResource BoolVisibility}}">
                     <DockPanel>
                         <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE8AC;"
@@ -254,7 +264,7 @@
                     </DockPanel>
                 </Border>
                 <Grid Grid.Row="2" Margin="20,12">
-                    <Border VerticalAlignment="Center" HorizontalAlignment="Center" Background="#1E2C3A"
+                    <Border VerticalAlignment="Center" HorizontalAlignment="Center" Background="{StaticResource SubtleBrush}"
                             CornerRadius="16" Padding="16,7" MaxWidth="420" Margin="20">
                         <Border.Style>
                             <Style TargetType="Border">
@@ -301,12 +311,12 @@
                                 <Border Padding="12,9" CornerRadius="10" MaxWidth="520">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#182533"/>
+                                            <Setter Property="Background" Value="{StaticResource MessageBrush}"/>
                                             <Setter Property="HorizontalAlignment" Value="Left"/>
                                             <Setter Property="Margin" Value="0,0,42,0"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsOutgoing}" Value="True">
-                                                    <Setter Property="Background" Value="#2B5278"/>
+                                                    <Setter Property="Background" Value="{StaticResource SelectedBrush}"/>
                                                     <Setter Property="HorizontalAlignment" Value="Right"/>
                                                     <Setter Property="Margin" Value="42,0,0,0"/>
                                                 </DataTrigger>
@@ -314,25 +324,25 @@
                                         </Style>
                                     </Border.Style>
                                     <StackPanel>
-                                        <TextBlock Text="{Binding DisplayAuthor}" FontSize="11" Foreground="#A9BFC5"
+                                        <TextBlock Text="{Binding DisplayAuthor}" FontSize="11" Foreground="{StaticResource SecondaryTextBrush}"
                                                    Margin="0,0,0,5" TextTrimming="CharacterEllipsis"/>
                                         <controls:MessageTextBox behaviors:MessageLinks.Text="{Binding Text, Mode=OneWay}"
                                                      Style="{StaticResource MessageText}"
                                                      Visibility="{Binding HasText, Converter={StaticResource BoolVisibility}}"
                                                      AutomationProperties.Name="{localization:Text ConversationMessageText}"/>
-                                        <Border Background="#152331" CornerRadius="8" Padding="12" Margin="0,8,0,0"
+                                        <Border Background="{StaticResource AttachmentBrush}" CornerRadius="8" Padding="12" Margin="0,8,0,0"
                                                 Visibility="{Binding HasAttachment, Converter={StaticResource BoolVisibility}}">
                                             <StackPanel DataContext="{Binding Attachment}" MinWidth="230" MaxWidth="450">
                                                 <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" FontSize="14"
                                                            TextWrapping="Wrap" ToolTip="{Binding FileName}"/>
-                                                <TextBlock Text="{Binding FileSize}" FontSize="11" Foreground="#A9BFC5" Margin="0,4,0,0"/>
+                                                <TextBlock Text="{Binding FileSize}" FontSize="11" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,4,0,0"/>
                                                 <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Height="4" Margin="0,10,0,2"
-                                                             Foreground="{StaticResource AccentBrush}" Background="#303B4F"
+                                                             Foreground="{StaticResource AccentBrush}" Background="{StaticResource BorderBrush}"
                                                              Visibility="{Binding IsTransferring, Converter={StaticResource BoolVisibility}}"
                                                              AutomationProperties.Name="{localization:Text FileTransferProgress}"/>
-                                                <TextBlock Text="{Binding Status}" FontSize="12" Foreground="#B7CBD0"
+                                                <TextBlock Text="{Binding Status}" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}"
                                                            TextWrapping="Wrap" Margin="0,7,0,0"/>
-                                                <TextBlock Text="{Binding SavedLocation}" FontSize="11" Foreground="#A9BFC5"
+                                                <TextBlock Text="{Binding SavedLocation}" FontSize="11" Foreground="{StaticResource SecondaryTextBrush}"
                                                            TextWrapping="Wrap" ToolTip="{Binding SavedLocation}"/>
                                                 <WrapPanel Margin="0,8,0,0" Visibility="{Binding CanAccept, Converter={StaticResource BoolVisibility}}">
                                                     <Button Content="{localization:Text SaveFile}" Command="{Binding SaveCommand}" Padding="12,7"
@@ -344,7 +354,7 @@
                                                         Visibility="{Binding CanCancel, Converter={StaticResource BoolVisibility}}"/>
                                             </StackPanel>
                                         </Border>
-                                        <TextBlock Text="{Binding Time}" FontSize="10" Foreground="#A9BFC5"
+                                        <TextBlock Text="{Binding Time}" FontSize="10" Foreground="{StaticResource SecondaryTextBrush}"
                                                    HorizontalAlignment="Right" Margin="0,6,0,0"/>
                                     </StackPanel>
                                 </Border>
@@ -352,13 +362,13 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </Grid>
-                <StackPanel Grid.Row="3" Background="#17212B" Visibility="{Binding IsConnected, Converter={StaticResource BoolVisibility}}">
+                <StackPanel Grid.Row="3" Background="{StaticResource PanelBrush}" Visibility="{Binding IsConnected, Converter={StaticResource BoolVisibility}}">
                     <ScrollViewer Margin="16,12,16,0" MaxHeight="144" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                   Visibility="{Binding HasDraftAttachment, Converter={StaticResource BoolVisibility}}">
                         <ItemsControl ItemsSource="{Binding DraftAttachments}" AutomationProperties.Name="{localization:Text AttachedFiles}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#222C3D" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
+                                    <Border Background="{StaticResource InputBrush}" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
                                         <DockPanel>
                                             <Button DockPanel.Dock="Right" Content="✕"
                                                     Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -374,7 +384,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                    <Border Background="#17212B" Padding="10,8">
+                    <Border Background="{StaticResource PanelBrush}" Padding="10,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -388,7 +398,7 @@
                                      behaviors:MessageInput.SendOnEnterCommand="{Binding SendCommand}"
                                      MaxLength="8000" AcceptsReturn="True" TextWrapping="Wrap"
                                      MinHeight="40" MaxHeight="150" VerticalScrollBarVisibility="Auto"
-                                     Background="#17212B" BorderBrush="Transparent" BorderThickness="0" Padding="8,8"
+                                     Background="{StaticResource PanelBrush}" BorderBrush="Transparent" BorderThickness="0" Padding="8,8"
                                      ToolTip="{localization:Text MessageInputHint}" AutomationProperties.Name="{localization:Text MessageText}"/>
                             <Button Grid.Column="2" Content="&#xE724;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="20"
                                     ToolTip="{localization:Text Send}" AutomationProperties.Name="{localization:Text Send}" Command="{Binding SendCommand}"
@@ -402,7 +412,7 @@
                                    FontSize="11" Foreground="{StaticResource MutedBrush}"/>
                     </DockPanel>
                 </StackPanel>
-                <Border Grid.RowSpan="4" Background="#EF1D3033" BorderBrush="{StaticResource AccentBrush}"
+                <Border Grid.RowSpan="4" Background="{StaticResource DropOverlayBrush}" BorderBrush="{StaticResource AccentBrush}"
                         BorderThickness="2" CornerRadius="12" Margin="0,12" IsHitTestVisible="False"
                         Visibility="{Binding ElementName=ChatDropTarget, Path=(behaviors:FileDrop.IsDragOver), Converter={StaticResource BoolVisibility}}">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
@@ -415,10 +425,10 @@
                 </Border>
             </Grid>
         </Grid>
-        <Border Grid.Row="1" BorderBrush="#283142" BorderThickness="0,1,0,0" Padding="24,0">
+        <Border Grid.Row="1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="24,0">
             <DockPanel VerticalAlignment="Center">
                 <TextBlock DockPanel.Dock="Right" Text="{Binding ConnectionLabel}" FontSize="11"
-                           Foreground="#67DFC2"/>
+                           Foreground="{StaticResource AccentBrush}"/>
                 <TextBlock Text="{Binding Status}" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
             </DockPanel>
         </Border>
@@ -452,7 +462,7 @@
                     AutomationProperties.Name="{localization:Text CloseSettings}">
                 <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}"/></ControlTemplate></Button.Template>
             </Button>
-            <Border Width="360" HorizontalAlignment="Left" Background="#17212B">
+            <Border Width="360" HorizontalAlignment="Left" Background="{StaticResource PanelBrush}">
                 <Border.RenderTransform><TranslateTransform X="-360"/></Border.RenderTransform>
                 <Border.Style>
                     <Style TargetType="Border">
@@ -536,7 +546,7 @@
                                            TextWrapping="Wrap" FontSize="12" LineHeight="18"
                                            Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
                             </StackPanel>
-                            <Border Height="1" Background="#263442" Margin="0,24,0,20"/>
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,24,0,20"/>
                             <TextBlock Text="{localization:Text ManualConnection}" Foreground="{StaticResource AccentBrush}" FontSize="14" FontWeight="SemiBold"/>
                             <StackPanel Margin="0,12,0,0">
                                 <Grid>
