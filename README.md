@@ -18,13 +18,13 @@ A lightweight Windows messenger for chatting and sharing files over your local n
 4. Type a message and press **Enter** to send it. Use **Shift+Enter** for a new line.
 5. To share files, drag them into the conversation or click **+**, then press **Send**. The recipient clicks **Save…** to choose a destination.
 
-Use **Settings** to change your display name, language, or listening port. Disconnect before applying changes. You can also enable **Start with Windows** there.
+Open the **☰ menu** to change your display name, language, or listening port in the sliding settings panel. Disconnect before applying network changes. You can also enable **Start with Windows** there. Use the search field above the computer list to filter by name or IP address.
 
 Closing or minimizing the window keeps WinLanChat running in the system tray. Double-click its tray icon to reopen it, or choose **Exit** from the tray menu to quit.
 
 ## Connection help
 
-Both computers must have WinLanChat running. If a computer does not appear, click the refresh icon beside **Network computers** or use **Connect by IP manually**.
+Both computers must have WinLanChat running. If a computer does not appear, click the refresh icon beside **Network computers** or open the **☰ menu** and use **Connect by IP manually** in the settings panel.
 
 Firewalls must allow UDP port **45831** for discovery and TCP port **45832** for chat and files (or your chosen listening port). Guest Wi-Fi, VPNs, and networks that isolate devices may prevent connections.
 

@@ -489,4 +489,16 @@
   <data name="InvalidLanguage" xml:space="preserve">
     <value>Выберите поддерживаемый язык интерфейса.</value>
   </data>
+  <data name="SearchPeers" xml:space="preserve">
+    <value>Поиск</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>Ничего не найдено</value>
+  </data>
+  <data name="CloseSettings" xml:space="preserve">
+    <value>Закрыть настройки</value>
+  </data>
+  <data name="ChooseConversation" xml:space="preserve">
+    <value>Выберите, кому хотите написать</value>
+  </data>
 </root>

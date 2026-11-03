@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
-        <SolidColorBrush x:Key="MutedBrush" Color="#919BAE"/>
+        <SolidColorBrush x:Key="MutedBrush" Color="#8195A8"/>
         <SolidColorBrush x:Key="TextBrush" Color="#EDF1F7"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#67DFC2"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#64B5EF"/>
         <BooleanToVisibilityConverter x:Key="BoolVisibility"/>
         <Style TargetType="Control">
             <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -16,10 +16,10 @@
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="Background" Value="#10151F"/>
+            <Setter Property="Background" Value="#242F3D"/>
             <Setter Property="CaretBrush" Value="{StaticResource AccentBrush}"/>
-            <Setter Property="SelectionBrush" Value="#347F70"/>
-            <Setter Property="BorderBrush" Value="#30394B"/>
+            <Setter Property="SelectionBrush" Value="#3D6387"/>
+            <Setter Property="BorderBrush" Value="#344555"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -27,7 +27,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Border x:Name="Shell" Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8">
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
                             <ScrollViewer x:Name="PART_ContentHost" Focusable="False"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -47,7 +47,7 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="#EDF1F7"/>
-            <Setter Property="Background" Value="#283246"/>
+            <Setter Property="Background" Value="#243442"/>
             <Setter Property="Padding" Value="16,11"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
@@ -76,7 +76,7 @@
         </Style>
         <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-            <Setter Property="Foreground" Value="#10241F"/>
+            <Setter Property="Foreground" Value="#102438"/>
         </Style>
         <Style x:Key="FieldLabel" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>

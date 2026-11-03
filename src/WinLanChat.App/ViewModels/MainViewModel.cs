@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Windows.Threading;
+using System.Windows.Data;
 using WinLanChat.App.Infrastructure;
 using WinLanChat.App.Models;
 using WinLanChat.App.Services;
@@ -46,6 +48,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private bool _settingsLoaded;
     private bool _settingsNeedSave;
     private bool _isSettingsOpen;
+    private string _peerSearch = "";
     private ProfileSettings? _activeProfile;
     private bool _isConnecting;
     private bool _closed;
@@ -58,6 +61,13 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _settingsStore = settingsStore;
         _fileDialogs = fileDialogs ?? new FileDialogs();
         _startupService = startupService;
+        PeersView = CollectionViewSource.GetDefaultView(Peers);
+        PeersView.Filter = item => item is DiscoveredPeer peer &&
+            (peer.Name.Contains(PeerSearch.Trim(), StringComparison.CurrentCultureIgnoreCase)
+             || peer.ComputerName.Contains(PeerSearch.Trim(), StringComparison.CurrentCultureIgnoreCase)
+             || peer.Address.Contains(PeerSearch.Trim(), StringComparison.OrdinalIgnoreCase));
+        CloseSettingsCommand = new RelayCommand(() => IsSettingsOpen = false);
+        Messages.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasConversation));
         ToggleWindowsStartupCommand = new AsyncCommand(ToggleWindowsStartupAsync,
             ex => ErrorMessage = Strings.Format(Strings.StartupChangeFailed, ex.Message),
             () => _startupService is not null && _startupLoaded && !_closed);
@@ -93,6 +103,14 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public ObservableCollection<ChatMessage> Messages { get; } = [];
     public event Action<ChatMessage>? IncomingMessageReceived;
     public ObservableCollection<DiscoveredPeer> Peers { get; } = [];
+    public ICollectionView PeersView { get; }
+    public string PeerSearch
+    {
+        get => _peerSearch;
+        set { if (Set(ref _peerSearch, value)) PeersView.Refresh(); }
+    }
+    public bool HasConversation => IsConnected || Messages.Count > 0;
+    public RelayCommand CloseSettingsCommand { get; }
     public AsyncCommand ConnectCommand { get; }
     public AsyncCommand ConnectSelectedCommand { get; }
     public AsyncCommand RefreshPeersCommand { get; }
@@ -533,7 +551,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         return peer is null ? Task.CompletedTask : ConnectToAsync(peer.Host, peer.Port);
     }
 
-    private Task ConnectAsync() => ConnectToAsync(RemoteHost.Trim(), ParsePort(RemotePort));
+    private async Task ConnectAsync()
+    {
+        await ConnectToAsync(RemoteHost.Trim(), ParsePort(RemotePort));
+        if (IsConnected)
+            IsSettingsOpen = false;
+    }
 
     private async Task ConnectToAsync(string host, int port)
     {
@@ -720,6 +743,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
         SetStatus(peer is null ? nameof(Strings.PeerDisconnectedStatus) : nameof(Strings.ConnectionEstablished));
         OnPropertyChanged(nameof(IsConnected));
+        OnPropertyChanged(nameof(HasConversation));
         OnPropertyChanged(nameof(CanEditConnection));
         OnPropertyChanged(nameof(PeerName));
         OnPropertyChanged(nameof(PeerAddress));

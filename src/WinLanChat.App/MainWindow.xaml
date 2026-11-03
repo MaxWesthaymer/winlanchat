@@ -4,10 +4,53 @@
         xmlns:behaviors="clr-namespace:WinLanChat.App.Behaviors"
         xmlns:localization="clr-namespace:WinLanChat.App.Localization"
         xmlns:controls="clr-namespace:WinLanChat.App.Controls"
-        Title="{localization:Text AppName}" Icon="Assets/WinLanChat.ico" Width="1120" Height="780" MinWidth="920" MinHeight="680"
-        Background="#10141D" Foreground="#EDF1F7" FontFamily="Segoe UI"
+        Title="{localization:Text AppName}" Icon="Assets/WinLanChat.ico" Width="1120" Height="780" MinWidth="760" MinHeight="540"
+        Background="#0E1621" Foreground="#EDF1F7" FontFamily="Segoe UI"
         WindowStartupLocation="CenterScreen" UseLayoutRounding="True" ThemeMode="Dark">
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding CloseSettingsCommand}"/>
+    </Window.InputBindings>
     <Window.Resources>
+        <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="19"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#243442"/>
+                    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="MenuToggle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Shell" Background="Transparent" CornerRadius="20">
+                            <TextBlock Text="&#xE700;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="20"
+                                       Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Shell" Property="Background" Value="#243442"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="Shell" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="MessageText" TargetType="RichTextBox">
             <Setter Property="IsReadOnly" Value="True"/>
             <Setter Property="IsDocumentEnabled" Value="True"/>
@@ -40,45 +83,418 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Grid Background="#10141D">
+    <Grid Background="#0E1621">
         <Grid.RowDefinitions>
-            <RowDefinition Height="76"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="34"/>
         </Grid.RowDefinitions>
-        <Border BorderBrush="#283142" BorderThickness="0,0,0,1" Background="#171D29" Padding="26,0">
-            <Grid>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Width="38" Height="38" CornerRadius="11" Background="#67DFC2" Margin="0,0,12,0">
-                        <TextBlock Text="W" Foreground="#10241F" FontSize="22" FontWeight="Bold"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Grid>
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSettingsOpen}" Value="True">
+                            <Setter Property="IsEnabled" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="310" MinWidth="250" MaxWidth="420"/>
+                <ColumnDefinition Width="1"/>
+                <ColumnDefinition Width="*" MinWidth="400"/>
+            </Grid.ColumnDefinitions>
+            <Grid Background="#17212B">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="64"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="10,0,14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ToggleButton x:Name="SettingsMenuButton" Style="{StaticResource MenuToggle}"
+                                  IsChecked="{Binding IsSettingsOpen, Mode=TwoWay}"
+                                  ToolTip="{localization:Text Settings}" AutomationProperties.Name="{localization:Text Settings}"/>
+                    <Grid Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                        <TextBox Text="{Binding PeerSearch, UpdateSourceTrigger=PropertyChanged}" Height="38"
+                                 Background="#242F3D" BorderThickness="0" BorderBrush="Transparent" Padding="14,8"
+                                 AutomationProperties.Name="{localization:Text SearchPeers}"/>
+                        <TextBlock Text="{localization:Text SearchPeers}" Foreground="{StaticResource MutedBrush}"
+                                   Margin="15,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding PeerSearch}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Grid>
+                <DockPanel Grid.Row="1" Margin="20,0,10,4">
+                    <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE72C;"
+                            Command="{Binding RefreshPeersCommand}" Width="32" Height="32" FontSize="16"
+                            ToolTip="{localization:Text RefreshPeers}" AutomationProperties.Name="{localization:Text RefreshPeers}"/>
+                    <TextBlock Text="{localization:Text NetworkComputers}" VerticalAlignment="Center"
+                               Foreground="{StaticResource MutedBrush}" FontSize="12"/>
+                </DockPanel>
+                <Grid Grid.Row="2">
+                    <ListBox ItemsSource="{Binding PeersView}" SelectedItem="{Binding SelectedPeer, Mode=TwoWay}"
+                             behaviors:ListItemActivation.Command="{Binding ConnectSelectedCommand}"
+                             IsEnabled="{Binding CanEditConnection}" Background="Transparent" BorderThickness="0" Padding="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.VirtualizationMode="Recycling" AutomationProperties.Name="{localization:Text NetworkComputersAccessibleName}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                                <Setter Property="Padding" Value="16,12"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border x:Name="Shell" Padding="{TemplateBinding Padding}" Background="Transparent">
+                                                <ContentPresenter/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Shell" Property="Background" Value="#202E3B"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Shell" Property="Background" Value="#2B5278"/>
+                                                </Trigger>
+                                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                                    <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                                    <Setter TargetName="Shell" Property="BorderThickness" Value="1"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False"><Setter Property="Cursor" Value="Arrow"/></Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ToolTip="{Binding Description}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="46" Height="46" CornerRadius="23" Background="#3D78A4" Margin="0,0,12,0">
+                                        <TextBlock Text="&#xE7F4;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="22"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Address}" FontSize="12" Foreground="{StaticResource MutedBrush}"
+                                                   Margin="0,5,0,0" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Margin="24,24" TextWrapping="Wrap" TextAlignment="Center" FontSize="13" LineHeight="21"
+                               Foreground="{StaticResource MutedBrush}" IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Text" Value="{localization:Text NoSearchResults}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding PeersView.IsEmpty}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                    <DataTrigger Binding="{Binding Peers.Count}" Value="0"><Setter Property="Text" Value="{Binding DiscoveryStatus}"/></DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+                <Button Grid.Row="3" Content="{localization:Text CancelConnection}" Command="{Binding CancelConnectCommand}"
+                        Margin="16,8,16,16" Visibility="{Binding IsConnecting, Converter={StaticResource BoolVisibility}}"/>
+            </Grid>
+            <GridSplitter Grid.Column="1" Width="5" Background="Transparent" HorizontalAlignment="Center"
+                          ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
+            <Grid x:Name="ChatDropTarget" Grid.Column="2" Background="Transparent"
+                  AllowDrop="True" behaviors:FileDrop.Command="{Binding DropFileCommand}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Border Height="64" Background="#17212B" Padding="24,0"
+                        Visibility="{Binding HasConversation, Converter={StaticResource BoolVisibility}}">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE8AC;"
+                                Command="{Binding DisconnectCommand}" VerticalAlignment="Center"
+                                ToolTip="{localization:Text Disconnect}" AutomationProperties.Name="{localization:Text Disconnect}"
+                                Visibility="{Binding IsConnected, Converter={StaticResource BoolVisibility}}"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding PeerName}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding PeerAddress}" Foreground="{StaticResource MutedBrush}"
+                                       FontSize="12" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+                <Border Grid.Row="1" Background="#3C262D" CornerRadius="6" Padding="12" Margin="16,12,16,0"
+                        Visibility="{Binding HasError, Converter={StaticResource BoolVisibility}}">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="&#xE711;" Command="{Binding DismissErrorCommand}"
+                                Style="{StaticResource IconButton}" Width="28" Height="28" FontSize="14" Margin="8,0,0,0"
+                                AutomationProperties.Name="{localization:Text DismissError}"/>
+                        <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Foreground="#F4BEC8" VerticalAlignment="Center" FontSize="13"/>
+                    </DockPanel>
+                </Border>
+                <Grid Grid.Row="2" Margin="20,12">
+                    <Border VerticalAlignment="Center" HorizontalAlignment="Center" Background="#1E2C3A"
+                            CornerRadius="16" Padding="16,7" MaxWidth="420" Margin="20">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Messages.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock FontSize="13" TextAlignment="Center" TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="{localization:Text ChooseConversation}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsConnected}" Value="True"><Setter Property="Text" Value="{localization:Text EmptyConversationTitle}"/></DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </Border>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{localization:Text AppName}" FontSize="20" FontWeight="SemiBold"/>
-                        <TextBlock Text="{localization:Text AppTagline}" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
-                    </StackPanel>
+                    <ListBox ItemsSource="{Binding Messages}" Background="Transparent" BorderThickness="0"
+                             behaviors:ChatScroll.FollowMessages="True"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.CanContentScroll="True"
+                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                             AutomationProperties.Name="{localization:Text Conversation}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,0,8,14"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <ContentPresenter/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="12,9" CornerRadius="10" MaxWidth="520">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#182533"/>
+                                            <Setter Property="HorizontalAlignment" Value="Left"/>
+                                            <Setter Property="Margin" Value="0,0,42,0"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsOutgoing}" Value="True">
+                                                    <Setter Property="Background" Value="#2B5278"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                                    <Setter Property="Margin" Value="42,0,0,0"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding DisplayAuthor}" FontSize="11" Foreground="#A9BFC5"
+                                                   Margin="0,0,0,5" TextTrimming="CharacterEllipsis"/>
+                                        <controls:MessageTextBox behaviors:MessageLinks.Text="{Binding Text, Mode=OneWay}"
+                                                     Style="{StaticResource MessageText}"
+                                                     Visibility="{Binding HasText, Converter={StaticResource BoolVisibility}}"
+                                                     AutomationProperties.Name="{localization:Text ConversationMessageText}"/>
+                                        <Border Background="#152331" CornerRadius="8" Padding="12" Margin="0,8,0,0"
+                                                Visibility="{Binding HasAttachment, Converter={StaticResource BoolVisibility}}">
+                                            <StackPanel DataContext="{Binding Attachment}" MinWidth="230" MaxWidth="450">
+                                                <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" FontSize="14"
+                                                           TextWrapping="Wrap" ToolTip="{Binding FileName}"/>
+                                                <TextBlock Text="{Binding FileSize}" FontSize="11" Foreground="#A9BFC5" Margin="0,4,0,0"/>
+                                                <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Height="4" Margin="0,10,0,2"
+                                                             Foreground="{StaticResource AccentBrush}" Background="#303B4F"
+                                                             Visibility="{Binding IsTransferring, Converter={StaticResource BoolVisibility}}"
+                                                             AutomationProperties.Name="{localization:Text FileTransferProgress}"/>
+                                                <TextBlock Text="{Binding Status}" FontSize="12" Foreground="#B7CBD0"
+                                                           TextWrapping="Wrap" Margin="0,7,0,0"/>
+                                                <TextBlock Text="{Binding SavedLocation}" FontSize="11" Foreground="#A9BFC5"
+                                                           TextWrapping="Wrap" ToolTip="{Binding SavedLocation}"/>
+                                                <WrapPanel Margin="0,8,0,0" Visibility="{Binding CanAccept, Converter={StaticResource BoolVisibility}}">
+                                                    <Button Content="{localization:Text SaveFile}" Command="{Binding SaveCommand}" Padding="12,7"
+                                                            Style="{StaticResource AccentButton}" Margin="0,0,8,0"/>
+                                                    <Button Content="{localization:Text RejectFile}" Command="{Binding RejectCommand}" Padding="12,7"/>
+                                                </WrapPanel>
+                                                <Button Content="{localization:Text CancelTransfer}" Command="{Binding CancelCommand}" Padding="12,7"
+                                                        HorizontalAlignment="Left" Margin="0,8,0,0"
+                                                        Visibility="{Binding CanCancel, Converter={StaticResource BoolVisibility}}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <TextBlock Text="{Binding Time}" FontSize="10" Foreground="#A9BFC5"
+                                                   HorizontalAlignment="Right" Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+                <StackPanel Grid.Row="3" Background="#17212B" Visibility="{Binding IsConnected, Converter={StaticResource BoolVisibility}}">
+                    <ScrollViewer Margin="16,12,16,0" MaxHeight="144" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                  Visibility="{Binding HasDraftAttachment, Converter={StaticResource BoolVisibility}}">
+                        <ItemsControl ItemsSource="{Binding DraftAttachments}" AutomationProperties.Name="{localization:Text AttachedFiles}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#222C3D" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="✕"
+                                                    Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" Padding="9,5" Margin="12,0,0,0"
+                                                    AutomationProperties.Name="{localization:Text RemoveAttachment}"/>
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding FileSize}" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource MutedBrush}" Margin="12,0,0,0" FontSize="12"/>
+                                            <TextBlock Text="{Binding FileName}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Path}" VerticalAlignment="Center" FontSize="13"/>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <Border Background="#17212B" Padding="10,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Content="&#xE723;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="23" Command="{Binding AttachFileCommand}" Padding="10,4"
+                                    Background="Transparent" VerticalAlignment="Bottom" Margin="0,0,4,0"
+                                    ToolTip="{localization:Text AttachFilesHint}" AutomationProperties.Name="{localization:Text AttachFiles}"/>
+                            <TextBox x:Name="MessageDraftInput" Grid.Column="1" Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConnected}"
+                                     behaviors:MessageInput.SendOnEnterCommand="{Binding SendCommand}"
+                                     MaxLength="8000" AcceptsReturn="True" TextWrapping="Wrap"
+                                     MinHeight="40" MaxHeight="150" VerticalScrollBarVisibility="Auto"
+                                     Background="#17212B" BorderBrush="Transparent" BorderThickness="0" Padding="8,8"
+                                     ToolTip="{localization:Text MessageInputHint}" AutomationProperties.Name="{localization:Text MessageText}"/>
+                            <Button Grid.Column="2" Content="&#xE724;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="20"
+                                    ToolTip="{localization:Text Send}" AutomationProperties.Name="{localization:Text Send}" Command="{Binding SendCommand}"
+                                    Style="{StaticResource AccentButton}" VerticalAlignment="Bottom" Margin="8,0,0,0" Padding="12,10"/>
+                        </Grid>
+                    </Border>
+                    <DockPanel Margin="18,0,18,8">
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding DraftCounter}" FontSize="11"
+                                   Foreground="{StaticResource MutedBrush}"/>
+                        <TextBlock Text="{localization:Text MessageInputHint}"
+                                   FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+                    </DockPanel>
                 </StackPanel>
-                <Border HorizontalAlignment="Right" VerticalAlignment="Center" Background="#222D3C"
-                        CornerRadius="14" Padding="12,6">
-                    <TextBlock Text="{localization:Text DirectConnection}" Foreground="#B9C7DA" FontSize="12"/>
+                <Border Grid.RowSpan="4" Background="#EF1D3033" BorderBrush="{StaticResource AccentBrush}"
+                        BorderThickness="2" CornerRadius="12" Margin="0,12" IsHitTestVisible="False"
+                        Visibility="{Binding ElementName=ChatDropTarget, Path=(behaviors:FileDrop.IsDragOver), Converter={StaticResource BoolVisibility}}">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
+                        <TextBlock Text="{localization:Text DropFilesTitle}" FontSize="20" FontWeight="SemiBold"
+                                   TextAlignment="Center" TextWrapping="Wrap" Foreground="{StaticResource AccentBrush}"/>
+                        <TextBlock Text="{localization:Text DropFilesHint}"
+                                   Margin="0,12,0,0" TextAlignment="Center" TextWrapping="Wrap"
+                                   Foreground="{StaticResource MutedBrush}"/>
+                    </StackPanel>
                 </Border>
             </Grid>
+        </Grid>
+        <Border Grid.Row="1" BorderBrush="#283142" BorderThickness="0,1,0,0" Padding="24,0">
+            <DockPanel VerticalAlignment="Center">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding ConnectionLabel}" FontSize="11"
+                           Foreground="#67DFC2"/>
+                <TextBlock Text="{Binding Status}" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+            </DockPanel>
         </Border>
-
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Border Background="#171D29" BorderBrush="#283142" BorderThickness="0,0,1,0">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Margin="22,24">
-                        <TextBlock Text="{localization:Text YourComputer}" FontSize="11" FontWeight="SemiBold"
-                                   Foreground="{StaticResource MutedBrush}" Margin="0,0,0,18"/>
-                        <TextBlock Text="{Binding ActiveDisplayName}" FontSize="16" FontWeight="SemiBold"
-                                   TextTrimming="CharacterEllipsis" Margin="0,0,0,12"/>
-                        <Expander Header="{localization:Text Settings}" IsExpanded="{Binding IsSettingsOpen}"
-                                  Foreground="{StaticResource MutedBrush}">
+        <Grid x:Name="SettingsOverlay" ClipToBounds="True" KeyboardNavigation.TabNavigation="Cycle"
+              behaviors:DrawerFocus.IsOpen="{Binding IsSettingsOpen}"
+              behaviors:DrawerFocus.ReturnTarget="{Binding ElementName=SettingsMenuButton}">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSettingsOpen}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard><Storyboard>
+                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility">
+                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}"/>
+                                    </ObjectAnimationUsingKeyFrames>
+                                </Storyboard></BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard><Storyboard>
+                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility">
+                                        <DiscreteObjectKeyFrame KeyTime="0:0:0.2" Value="{x:Static Visibility.Collapsed}"/>
+                                    </ObjectAnimationUsingKeyFrames>
+                                </Storyboard></BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Button Command="{Binding CloseSettingsCommand}" Focusable="False" Background="#80000000"
+                    AutomationProperties.Name="{localization:Text CloseSettings}">
+                <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}"/></ControlTemplate></Button.Template>
+            </Button>
+            <Border Width="360" HorizontalAlignment="Left" Background="#17212B">
+                <Border.RenderTransform><TranslateTransform X="-360"/></Border.RenderTransform>
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSettingsOpen}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard><Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="0" Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard></BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard><Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="-360" Duration="0:0:0.2"/>
+                                    </Storyboard></BeginStoryboard>
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Grid KeyboardNavigation.TabNavigation="Cycle">
+                    <Grid.RowDefinitions><RowDefinition Height="64"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <DockPanel Margin="12,0,20,0">
+                        <Button DockPanel.Dock="Left" Style="{StaticResource IconButton}" Content="&#xE72B;"
+                                Command="{Binding CloseSettingsCommand}" Margin="0,0,16,0"
+                                ToolTip="{localization:Text CloseSettings}" AutomationProperties.Name="{localization:Text CloseSettings}"/>
+                        <TextBlock Text="{localization:Text Settings}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="24,8,24,24">
+                            <Border Background="#3C262D" CornerRadius="6" Padding="12" Margin="0,0,0,16"
+                                    Visibility="{Binding HasError, Converter={StaticResource BoolVisibility}}">
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="&#xE711;" Style="{StaticResource IconButton}"
+                                            Command="{Binding DismissErrorCommand}" Width="24" Height="24" FontSize="12" Margin="8,0,0,0"
+                                            AutomationProperties.Name="{localization:Text DismissError}"/>
+                                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#F4BEC8" TextWrapping="Wrap" FontSize="12"/>
+                                </DockPanel>
+                            </Border>
+                            <TextBlock Text="{Binding ActiveDisplayName}" FontSize="20" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding LocalAddresses}" Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,20"/>
                             <StackPanel Margin="0,12,0,0">
                                 <TextBlock Text="{localization:Text Language}" Style="{StaticResource FieldLabel}"/>
                                 <ComboBox x:Name="LanguageComboBox" ItemsSource="{Binding Languages}"
@@ -120,88 +536,8 @@
                                            TextWrapping="Wrap" FontSize="12" LineHeight="18"
                                            Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
                             </StackPanel>
-                        </Expander>
-                        <Border Background="#10151F" CornerRadius="8" Padding="12" Margin="0,14,0,0">
-                            <StackPanel>
-                                <TextBlock Text="{localization:Text YourAddress}" FontSize="11" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,6"/>
-                                <TextBlock Text="{Binding LocalAddresses}" TextWrapping="Wrap" FontSize="12" LineHeight="18"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Height="1" Background="#2B3445" Margin="0,18"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{localization:Text NetworkComputers}" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
-                            <Button Grid.Column="1" Command="{Binding RefreshPeersCommand}"
-                                    Width="32" Height="32" Padding="0" Background="Transparent"
-                                    ToolTip="{localization:Text RefreshPeers}"
-                                    AutomationProperties.Name="{localization:Text RefreshPeers}">
-                                <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16"/>
-                            </Button>
-                        </Grid>
-                        <TextBlock Text="{Binding DiscoveryStatus}" TextWrapping="Wrap" FontSize="12" LineHeight="18"
-                                   Foreground="{StaticResource MutedBrush}" Margin="0,10,0,12"/>
-                        <ListBox ItemsSource="{Binding Peers}" SelectedItem="{Binding SelectedPeer, Mode=TwoWay}"
-                                 behaviors:ListItemActivation.Command="{Binding ConnectSelectedCommand}"
-                                 IsEnabled="{Binding CanEditConnection}" MinHeight="80" MaxHeight="220"
-                                 Background="#10151F" BorderThickness="0" Padding="4"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
-                                 VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
-                                 AutomationProperties.Name="{localization:Text NetworkComputersAccessibleName}">
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="ListBoxItem">
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                    <Setter Property="Foreground" Value="#EDF1F7"/>
-                                    <Setter Property="Padding" Value="10,10"/>
-                                    <Setter Property="Margin" Value="0,0,0,4"/>
-                                    <Setter Property="Cursor" Value="Hand"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ListBoxItem">
-                                                <Border x:Name="Shell" CornerRadius="7" Padding="{TemplateBinding Padding}"
-                                                        Background="#1B2433" BorderBrush="Transparent" BorderThickness="1">
-                                                    <ContentPresenter/>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="Shell" Property="Background" Value="#283246"/>
-                                                    </Trigger>
-                                                    <Trigger Property="IsSelected" Value="True">
-                                                        <Setter TargetName="Shell" Property="Background" Value="#21483F"/>
-                                                        <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
-                                                    </Trigger>
-                                                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                                        <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="Cursor" Value="Arrow"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel ToolTip="{Binding Description}">
-                                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource MutedBrush}"
-                                                   Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                        <Button Content="{localization:Text CancelConnection}" Command="{Binding CancelConnectCommand}" Margin="0,8,0,0"
-                                Visibility="{Binding IsConnecting, Converter={StaticResource BoolVisibility}}"/>
-                        <Expander Header="{localization:Text ManualConnection}" Foreground="{StaticResource MutedBrush}" Margin="0,18,0,0">
+                            <Border Height="1" Background="#263442" Margin="0,24,0,20"/>
+                            <TextBlock Text="{localization:Text ManualConnection}" Foreground="{StaticResource AccentBrush}" FontSize="14" FontWeight="SemiBold"/>
                             <StackPanel Margin="0,12,0,0">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -223,219 +559,14 @@
                                 </Grid>
                                 <Button Content="{localization:Text ConnectByIp}" Command="{Binding ConnectCommand}" Margin="0,14,0,0"/>
                             </StackPanel>
-                        </Expander>
-                        <TextBlock Text="{localization:Text ConnectionInstructions}"
-                                   TextWrapping="Wrap" FontSize="12" LineHeight="19"
-                                   Foreground="{StaticResource MutedBrush}" Margin="0,18,0,0"/>
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-
-            <Grid x:Name="ChatDropTarget" Grid.Column="1" Margin="28,0" Background="Transparent"
-                  AllowDrop="True" behaviors:FileDrop.Command="{Binding DropFileCommand}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="90"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
-                        <TextBlock Text="{Binding PeerName}" FontSize="20" FontWeight="SemiBold"
-                                   TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="{Binding PeerAddress}" Foreground="{StaticResource MutedBrush}"
-                                   FontSize="12" Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
-                    </StackPanel>
-                    <Button Grid.Column="1" Content="{localization:Text Disconnect}" Command="{Binding DisconnectCommand}"
-                            VerticalAlignment="Center"
-                            Visibility="{Binding IsConnected, Converter={StaticResource BoolVisibility}}"/>
-                </Grid>
-
-                <Border Grid.Row="1" Background="#3C262D" BorderBrush="#78434F" BorderThickness="1"
-                        CornerRadius="8" Padding="12" Margin="0,0,0,12"
-                        Visibility="{Binding HasError, Converter={StaticResource BoolVisibility}}">
-                    <DockPanel>
-                        <Button DockPanel.Dock="Right" Content="✕" Command="{Binding DismissErrorCommand}"
-                                Padding="8,4" Background="Transparent" Margin="8,0,0,0"
-                                AutomationProperties.Name="{localization:Text DismissError}"/>
-                        <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Foreground="#F4BEC8"
-                                   VerticalAlignment="Center" FontSize="13"/>
-                    </DockPanel>
-                </Border>
-
-                <Grid Grid.Row="2">
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="390" Margin="24">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Messages.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <Border Width="72" Height="72" Background="#1D3033" CornerRadius="22" Margin="0,0,0,22">
-                            <TextBlock Text="↔" FontSize="38" Foreground="#67DFC2"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <TextBlock Text="{localization:Text EmptyConversationTitle}" FontSize="23" FontWeight="SemiBold"
-                                   TextAlignment="Center" TextWrapping="Wrap"/>
-                        <TextBlock Text="{localization:Text EmptyConversationHint}"
-                                   TextAlignment="Center" TextWrapping="Wrap" FontSize="14" LineHeight="23"
-                                   Foreground="{StaticResource MutedBrush}" Margin="0,12,0,0"/>
-                    </StackPanel>
-                    <ListBox ItemsSource="{Binding Messages}" Background="Transparent" BorderThickness="0"
-                             behaviors:ChatScroll.FollowMessages="True"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             ScrollViewer.CanContentScroll="True"
-                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
-                             AutomationProperties.Name="{localization:Text Conversation}">
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Setter Property="Padding" Value="0"/>
-                                <Setter Property="Margin" Value="0,0,8,14"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="ListBoxItem">
-                                            <ContentPresenter/>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Border Padding="16,12" CornerRadius="12" MaxWidth="520">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#222C3D"/>
-                                            <Setter Property="HorizontalAlignment" Value="Left"/>
-                                            <Setter Property="Margin" Value="0,0,42,0"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsOutgoing}" Value="True">
-                                                    <Setter Property="Background" Value="#21483F"/>
-                                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                                    <Setter Property="Margin" Value="42,0,0,0"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding DisplayAuthor}" FontSize="11" Foreground="#A9BFC5"
-                                                   Margin="0,0,0,5" TextTrimming="CharacterEllipsis"/>
-                                        <controls:MessageTextBox behaviors:MessageLinks.Text="{Binding Text, Mode=OneWay}"
-                                                     Style="{StaticResource MessageText}"
-                                                     Visibility="{Binding HasText, Converter={StaticResource BoolVisibility}}"
-                                                     AutomationProperties.Name="{localization:Text ConversationMessageText}"/>
-                                        <Border Background="#18232D" CornerRadius="8" Padding="12" Margin="0,8,0,0"
-                                                Visibility="{Binding HasAttachment, Converter={StaticResource BoolVisibility}}">
-                                            <StackPanel DataContext="{Binding Attachment}" MinWidth="230" MaxWidth="450">
-                                                <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" FontSize="14"
-                                                           TextWrapping="Wrap" ToolTip="{Binding FileName}"/>
-                                                <TextBlock Text="{Binding FileSize}" FontSize="11" Foreground="#A9BFC5" Margin="0,4,0,0"/>
-                                                <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Height="4" Margin="0,10,0,2"
-                                                             Foreground="{StaticResource AccentBrush}" Background="#303B4F"
-                                                             Visibility="{Binding IsTransferring, Converter={StaticResource BoolVisibility}}"
-                                                             AutomationProperties.Name="{localization:Text FileTransferProgress}"/>
-                                                <TextBlock Text="{Binding Status}" FontSize="12" Foreground="#B7CBD0"
-                                                           TextWrapping="Wrap" Margin="0,7,0,0"/>
-                                                <TextBlock Text="{Binding SavedLocation}" FontSize="11" Foreground="#A9BFC5"
-                                                           TextWrapping="Wrap" ToolTip="{Binding SavedLocation}"/>
-                                                <WrapPanel Margin="0,8,0,0" Visibility="{Binding CanAccept, Converter={StaticResource BoolVisibility}}">
-                                                    <Button Content="{localization:Text SaveFile}" Command="{Binding SaveCommand}" Padding="12,7"
-                                                            Style="{StaticResource AccentButton}" Margin="0,0,8,0"/>
-                                                    <Button Content="{localization:Text RejectFile}" Command="{Binding RejectCommand}" Padding="12,7"/>
-                                                </WrapPanel>
-                                                <Button Content="{localization:Text CancelTransfer}" Command="{Binding CancelCommand}" Padding="12,7"
-                                                        HorizontalAlignment="Left" Margin="0,8,0,0"
-                                                        Visibility="{Binding CanCancel, Converter={StaticResource BoolVisibility}}"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <TextBlock Text="{Binding Time}" FontSize="10" Foreground="#A9BFC5"
-                                                   HorizontalAlignment="Right" Margin="0,6,0,0"/>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Grid>
-
-                <StackPanel Grid.Row="3" Margin="0,18,0,18">
-                    <ScrollViewer MaxHeight="144" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                  Visibility="{Binding HasDraftAttachment, Converter={StaticResource BoolVisibility}}">
-                        <ItemsControl ItemsSource="{Binding DraftAttachments}" AutomationProperties.Name="{localization:Text AttachedFiles}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="#222C3D" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
-                                        <DockPanel>
-                                            <Button DockPanel.Dock="Right" Content="✕"
-                                                    Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}" Padding="9,5" Margin="12,0,0,0"
-                                                    AutomationProperties.Name="{localization:Text RemoveAttachment}"/>
-                                            <TextBlock DockPanel.Dock="Right" Text="{Binding FileSize}" VerticalAlignment="Center"
-                                                       Foreground="{StaticResource MutedBrush}" Margin="12,0,0,0" FontSize="12"/>
-                                            <TextBlock Text="{Binding FileName}" TextTrimming="CharacterEllipsis"
-                                                       ToolTip="{Binding Path}" VerticalAlignment="Center" FontSize="13"/>
-                                        </DockPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                            <Button Content="{localization:Text CancelConnection}" Command="{Binding CancelConnectCommand}" Margin="0,8,0,0"
+                                    Visibility="{Binding IsConnecting, Converter={StaticResource BoolVisibility}}"/>
+                            <TextBlock Text="{localization:Text ConnectionInstructions}" TextWrapping="Wrap" FontSize="12" LineHeight="19"
+                                       Foreground="{StaticResource MutedBrush}" Margin="0,16,0,0"/>
+                        </StackPanel>
                     </ScrollViewer>
-                    <Border Background="#1A2230" CornerRadius="12" BorderBrush="#303B4F" BorderThickness="1" Padding="12">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Content="＋" FontSize="23" Command="{Binding AttachFileCommand}" Padding="10,4"
-                                    Background="Transparent" VerticalAlignment="Bottom" Margin="0,0,4,0"
-                                    ToolTip="{localization:Text AttachFilesHint}" AutomationProperties.Name="{localization:Text AttachFiles}"/>
-                            <TextBox x:Name="MessageDraftInput" Grid.Column="1" Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConnected}"
-                                     behaviors:MessageInput.SendOnEnterCommand="{Binding SendCommand}"
-                                     MaxLength="8000" AcceptsReturn="True" TextWrapping="Wrap"
-                                     MinHeight="58" MaxHeight="150" VerticalScrollBarVisibility="Auto"
-                                     Background="#1A2230" BorderBrush="#1A2230" Padding="8,8"
-                                     AutomationProperties.Name="{localization:Text MessageText}"/>
-                            <Button Grid.Column="2" Content="{localization:Text Send}" Command="{Binding SendCommand}"
-                                    Style="{StaticResource AccentButton}" VerticalAlignment="Bottom" Margin="12,0,0,0"/>
-                        </Grid>
-                    </Border>
-                    <DockPanel Margin="4,9,4,0">
-                        <TextBlock DockPanel.Dock="Right" Text="{Binding DraftCounter}" FontSize="11"
-                                   Foreground="{StaticResource MutedBrush}"/>
-                        <TextBlock Text="{localization:Text MessageInputHint}"
-                                   FontSize="11" Foreground="{StaticResource MutedBrush}"/>
-                    </DockPanel>
-                </StackPanel>
-                <Border Grid.RowSpan="4" Background="#EF1D3033" BorderBrush="{StaticResource AccentBrush}"
-                        BorderThickness="2" CornerRadius="12" Margin="0,12" IsHitTestVisible="False"
-                        Visibility="{Binding ElementName=ChatDropTarget, Path=(behaviors:FileDrop.IsDragOver), Converter={StaticResource BoolVisibility}}">
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
-                        <TextBlock Text="{localization:Text DropFilesTitle}" FontSize="20" FontWeight="SemiBold"
-                                   TextAlignment="Center" TextWrapping="Wrap" Foreground="{StaticResource AccentBrush}"/>
-                        <TextBlock Text="{localization:Text DropFilesHint}"
-                                   Margin="0,12,0,0" TextAlignment="Center" TextWrapping="Wrap"
-                                   Foreground="{StaticResource MutedBrush}"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
+                </Grid>
+            </Border>
         </Grid>
-
-        <Border Grid.Row="2" BorderBrush="#283142" BorderThickness="0,1,0,0" Padding="24,0">
-            <DockPanel VerticalAlignment="Center">
-                <TextBlock DockPanel.Dock="Right" Text="{Binding ConnectionLabel}" FontSize="11"
-                           Foreground="{StaticResource AccentBrush}"/>
-                <TextBlock Text="{Binding Status}" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
-            </DockPanel>
-        </Border>
     </Grid>
 </Window>

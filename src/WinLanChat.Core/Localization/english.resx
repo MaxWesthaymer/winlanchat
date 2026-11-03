@@ -489,4 +489,16 @@
   <data name="InvalidLanguage" xml:space="preserve">
     <value>Choose a supported interface language.</value>
   </data>
+  <data name="SearchPeers" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>No computers found</value>
+  </data>
+  <data name="CloseSettings" xml:space="preserve">
+    <value>Close settings</value>
+  </data>
+  <data name="ChooseConversation" xml:space="preserve">
+    <value>Select a computer to start messaging</value>
+  </data>
 </root>
