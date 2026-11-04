@@ -36,7 +36,7 @@ Firewalls must allow UDP port **45831** for discovery and TCP port **45832** for
 
 ## Windows installer
 
-The **1.0.1** installer includes .NET Desktop Runtime for Windows x64;
+The **1.0.2** installer includes .NET Desktop Runtime for Windows x64;
 no separate .NET installation or internet connection is required. Setup includes English/Russian UI,
 a destination folder, Start menu and optional desktop shortcuts, and an uninstaller.
 See [installer build instructions](installer/README.md) to generate the setup EXE.
