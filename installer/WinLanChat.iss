@@ -48,9 +48,52 @@ Name: "{autoprograms}\WinLanChat"; Filename: "{app}\WinLanChat.App.exe"; Working
 Name: "{autodesktop}\WinLanChat"; Filename: "{app}\WinLanChat.App.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\WinLanChat.App.exe"; Description: "{cm:LaunchProgram,WinLanChat}"; Flags: nowait postinstall skipifsilent unchecked
+Filename: "{app}\WinLanChat.App.exe"; Description: "{cm:LaunchProgram,WinLanChat}"; Flags: nowait postinstall skipifsilent unchecked; Check: not IsUpdate
+Filename: "{app}\WinLanChat.App.exe"; Flags: nowait; Check: IsUpdate
+
+[CustomMessages]
+english.UpdateWaitFailed=WinLanChat has not finished closing. Exit it from the system tray and run the installer again.
+russian.UpdateWaitFailed=WinLanChat ещё не завершил работу. Выйдите из приложения через значок в трее и запустите установщик повторно.
 
 [Code]
+function OpenProcess(DesiredAccess: LongWord; InheritHandle: Boolean; ProcessId: LongWord): THandle;
+  external 'OpenProcess@kernel32.dll stdcall';
+function WaitForSingleObject(Handle: THandle; Milliseconds: LongWord): LongWord;
+  external 'WaitForSingleObject@kernel32.dll stdcall';
+function CloseHandle(Handle: THandle): Boolean;
+  external 'CloseHandle@kernel32.dll stdcall';
+
+function IsUpdate: Boolean;
+begin
+  Result := ExpandConstant('{param:UPDATE|0}') = '1';
+end;
+
+function InitializeSetup: Boolean;
+var
+  ProcessId: Integer;
+  ProcessHandle: THandle;
+begin
+  Result := True;
+  if not IsUpdate then Exit;
+  ProcessId := StrToIntDef(ExpandConstant('{param:WAITFORPID|0}'), 0);
+  if ProcessId <= 0 then
+    Result := False
+  else begin
+    ProcessHandle := OpenProcess($00100000, False, ProcessId);
+    if ProcessHandle <> 0 then begin
+      try
+        Result := WaitForSingleObject(ProcessHandle, 30000) = 0;
+      finally
+        CloseHandle(ProcessHandle);
+      end;
+    end else
+      { ERROR_INVALID_PARAMETER means the parent process has already exited. }
+      Result := DLLGetLastError = 87;
+  end;
+  if not Result then
+    MsgBox(CustomMessage('UpdateWaitFailed'), mbError, MB_OK);
+end;
+
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   StartupCommand: String;

@@ -78,6 +78,11 @@ internal static class UiSmoke
                         await LocalizationChecks.LanguageSettingsAsync(window, () =>
                             Render(content, 1100, 690, previewDirectory, "window-settings-english.png"));
                         await WindowsStartupChecks.UiAsync(application.Dispatcher);
+                        await UpdateChecks.UiAsync(application.Dispatcher, previewDirectory is null ? null : previewWindow =>
+                        {
+                            Render((FrameworkElement)previewWindow.Content, 1100, 690, previewDirectory, "window-updates-ready.png");
+                            Render((FrameworkElement)previewWindow.Content, 920, 570, previewDirectory, "window-updates-ready-narrow.png");
+                        });
                         await MessageNotificationChecks.RunAsync(window);
                         await UiTrayChecks.RunAsync(application);
                         application.SystemTray!.RequestExit();

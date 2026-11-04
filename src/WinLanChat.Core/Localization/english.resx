@@ -501,4 +501,32 @@
   <data name="ChooseConversation" xml:space="preserve">
     <value>Select a computer to start messaging</value>
   </data>
+  <data name="Updates" xml:space="preserve"><value>Updates</value></data>
+  <data name="UpdateCurrentVersion" xml:space="preserve"><value>Installed version: {0}</value></data>
+  <data name="UpdateCheckOnStartup" xml:space="preserve"><value>Check for updates when WinLanChat starts</value></data>
+  <data name="UpdateCheckOnStartupHint" xml:space="preserve"><value>Contacts GitHub over the internet. Save this preference with Apply changes.</value></data>
+  <data name="UpdateCheck" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>Download update</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Install and restart</value></data>
+  <data name="UpdateCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="UpdateIdle" xml:space="preserve"><value>Updates are downloaded from GitHub Releases.</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Checking GitHub for updates…</value></data>
+  <data name="UpdateUpToDate" xml:space="preserve"><value>You have the latest version.</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Version {0} is available.</value></data>
+  <data name="UpdateDownloading" xml:space="preserve"><value>Downloading and verifying the installer…</value></data>
+  <data name="UpdateReady" xml:space="preserve"><value>Update verified. You can install it when you are ready.</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>Update cancelled. You can try again.</value></data>
+  <data name="UpdateTimedOut" xml:space="preserve"><value>The update request timed out. Please try again.</value></data>
+  <data name="UpdateFailed" xml:space="preserve"><value>Could not complete the update.</value></data>
+  <data name="UpdateNoRelease" xml:space="preserve"><value>No public release was found. Check that the repository is public and has a published release.</value></data>
+  <data name="UpdateRateLimited" xml:space="preserve"><value>GitHub refused the request or its request limit was reached. Please try later.</value></data>
+  <data name="UpdateInvalidRelease" xml:space="preserve"><value>GitHub returned unsupported update information.</value></data>
+  <data name="UpdateInstallerMissing" xml:space="preserve"><value>This release has no matching Windows x64 installer.</value></data>
+  <data name="UpdateDigestMissing" xml:space="preserve"><value>This installer has no GitHub SHA-256 digest. The release author must upload it again.</value></data>
+  <data name="UpdateIntegrityFailed" xml:space="preserve"><value>The installer is incomplete or its SHA-256 checksum does not match. Installation was blocked.</value></data>
+  <data name="UpdateConfirmInstall" xml:space="preserve"><value>Install version {0}? WinLanChat will close and the installer will open. The current chat history will be lost. Your settings and saved files will be kept. WinLanChat will reopen after installation.</value></data>
+  <data name="UpdateFilesPending" xml:space="preserve"><value>Finish or cancel file transfers, handle pending file offers and remove unsent attachments before installing.</value></data>
+  <data name="UpdateInstalledOnly" xml:space="preserve"><value>Run the installed copy of WinLanChat to update it. Source builds cannot update themselves with the installer.</value></data>
+  <data name="UpdateLaunchFailed" xml:space="preserve"><value>Could not start the installer. WinLanChat will remain open.</value></data>
+  <data name="UpdateNetworkFailed" xml:space="preserve"><value>Could not contact GitHub or download the update. Check your internet connection and try again.</value></data>
 </root>

@@ -125,9 +125,24 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <ToggleButton x:Name="SettingsMenuButton" Style="{StaticResource MenuToggle}"
-                                  IsChecked="{Binding IsSettingsOpen, Mode=TwoWay}"
-                                  ToolTip="{localization:Text Settings}" AutomationProperties.Name="{localization:Text Settings}"/>
+                    <Grid>
+                        <ToggleButton x:Name="SettingsMenuButton" IsChecked="{Binding IsSettingsOpen, Mode=TwoWay}"
+                                      AutomationProperties.Name="{localization:Text Settings}">
+                            <ToggleButton.Style>
+                                <Style TargetType="ToggleButton" BasedOn="{StaticResource MenuToggle}">
+                                    <Setter Property="ToolTip" Value="{localization:Text Settings}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Updates.HasUpdate}" Value="True">
+                                            <Setter Property="ToolTip" Value="{Binding Updates.Status}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToggleButton.Style>
+                        </ToggleButton>
+                        <Ellipse Width="8" Height="8" Fill="{StaticResource AccentBrush}" HorizontalAlignment="Right"
+                                 VerticalAlignment="Top" Margin="0,10,2,0" IsHitTestVisible="False"
+                                 Visibility="{Binding Updates.HasUpdate, Converter={StaticResource BoolVisibility}}"/>
+                    </Grid>
                     <Grid Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                         <TextBox Text="{Binding PeerSearch, UpdateSourceTrigger=PropertyChanged}" Height="38"
                                  Background="{StaticResource InputBrush}" BorderThickness="0" BorderBrush="Transparent" Padding="14,8"
@@ -529,6 +544,14 @@
                                                  IsEnabled="{Binding CanEditProfile}" AutomationProperties.Name="{localization:Text ListeningPort}"/>
                                     </StackPanel>
                                 </Grid>
+                                <CheckBox x:Name="UpdateStartupCheckBox" Margin="0,16,0,0"
+                                          IsChecked="{Binding CheckForUpdatesOnStartup, Mode=TwoWay}"
+                                          IsEnabled="{Binding CanEditProfile}" Foreground="{StaticResource TextBrush}"
+                                          AutomationProperties.Name="{localization:Text UpdateCheckOnStartup}">
+                                    <TextBlock Text="{localization:Text UpdateCheckOnStartup}" TextWrapping="Wrap"/>
+                                </CheckBox>
+                                <TextBlock Text="{localization:Text UpdateCheckOnStartupHint}" TextWrapping="Wrap" FontSize="12"
+                                           Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
                                 <Button Content="{localization:Text ApplyChanges}" Command="{Binding ApplyProfileCommand}"
                                         Style="{StaticResource AccentButton}" Margin="0,12,0,0"/>
                                 <Button Content="{localization:Text ResetChanges}" Command="{Binding ResetProfileCommand}" Margin="0,8,0,0"
@@ -545,6 +568,28 @@
                                 <TextBlock Text="{localization:Text StartWithWindowsHint}"
                                            TextWrapping="Wrap" FontSize="12" LineHeight="18"
                                            Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,24,0,20"/>
+                            <StackPanel DataContext="{Binding Updates}">
+                                <TextBlock Text="{localization:Text Updates}" Foreground="{StaticResource AccentBrush}" FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding VersionLabel}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,8,0,0"/>
+                                <TextBlock x:Name="UpdateStatusText" Text="{Binding Status}" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                                <TextBlock Text="{Binding Error}" Foreground="#F4BEC8" TextWrapping="Wrap" FontSize="12" Margin="0,8,0,0"
+                                           Visibility="{Binding HasError, Converter={StaticResource BoolVisibility}}"/>
+                                <ScrollViewer MaxHeight="180" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto"
+                                              Visibility="{Binding HasUpdate, Converter={StaticResource BoolVisibility}}">
+                                    <TextBlock Text="{Binding ReleaseNotes}" TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource MutedBrush}"/>
+                                </ScrollViewer>
+                                <ProgressBar Height="6" Minimum="0" Maximum="100" Value="{Binding Progress, Mode=OneWay}" Margin="0,12,0,0"
+                                             AutomationProperties.Name="{localization:Text UpdateDownloading}"
+                                             Visibility="{Binding IsDownloading, Converter={StaticResource BoolVisibility}}"/>
+                                <Button x:Name="CheckUpdatesButton" Content="{localization:Text UpdateCheck}" Command="{Binding CheckCommand}" Margin="0,12,0,0"/>
+                                <Button Content="{localization:Text UpdateDownload}" Command="{Binding DownloadCommand}" Margin="0,8,0,0"
+                                        Visibility="{Binding HasUpdate, Converter={StaticResource BoolVisibility}}"/>
+                                <Button Content="{localization:Text UpdateInstall}" Command="{Binding InstallCommand}" Margin="0,8,0,0"
+                                        Style="{StaticResource AccentButton}" Visibility="{Binding IsReady, Converter={StaticResource BoolVisibility}}"/>
+                                <Button Content="{localization:Text UpdateCancel}" Command="{Binding CancelCommand}" Margin="0,8,0,0"
+                                        Visibility="{Binding IsBusy, Converter={StaticResource BoolVisibility}}"/>
                             </StackPanel>
                             <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,24,0,20"/>
                             <TextBlock Text="{localization:Text ManualConnection}" Foreground="{StaticResource AccentBrush}" FontSize="14" FontWeight="SemiBold"/>

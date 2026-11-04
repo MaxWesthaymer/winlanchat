@@ -20,6 +20,7 @@ if (args.Length == 1 && args[0] == "--localization-only")
 
 var tests = new (string Name, Func<Task> Run)[]
 {
+    ("GitHub updates validate versions, assets, SHA-256, redirects, cancellation and partial file cleanup", UpdateChecks.ServiceAsync),
     ("Russian and English resources override Windows culture and preserve formatted values", LocalizationChecks.ResourcesAsync),
     ("Single instance rejects duplicate and concurrent launches, signals activation and recovers after exit or crash", SingleInstanceChecks.LifecycleAsync),
     ("Message links preserve addresses and reject non-web protocols", MessageLinkChecks.ParsingAsync),

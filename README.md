@@ -36,10 +36,30 @@ Firewalls must allow UDP port **45831** for discovery and TCP port **45832** for
 
 ## Windows installer
 
-The **1.0.2** installer includes .NET Desktop Runtime for Windows x64;
+The **1.0.3** installer includes .NET Desktop Runtime for Windows x64;
 no separate .NET installation or internet connection is required. Setup includes English/Russian UI,
 a destination folder, Start menu and optional desktop shortcuts, and an uninstaller.
 See [installer build instructions](installer/README.md) to generate the setup EXE.
+
+## Updates
+
+Open **☰ → Updates** in the settings panel to check GitHub Releases, read the release
+notes and download a newer Windows x64 installer. Downloads show progress, support
+cancellation and must pass SHA-256 verification before installation. A dot on the
+settings button indicates an available update.
+
+Click **Install and restart** and confirm when ready. Finish or cancel file transfers,
+handle pending offers and remove unsent attachments first. The installer waits for
+WinLanChat to exit, updates the installed copy and reopens it. Settings and saved files
+are kept; the current in-memory conversation is lost when the app exits.
+
+**Check for updates when WinLanChat starts** is off by default. Enable it and click
+**Apply changes** to save the preference. Update checks need internet access; LAN chat
+works independently. No GitHub account or token is required for public releases.
+
+Self-update supports copies installed with the Windows installer. Source builds can
+check and download updates, but cannot replace themselves through the installer.
+Versions before 1.0.3 need one manual installation to gain the updater.
 
 ## Run from source
 

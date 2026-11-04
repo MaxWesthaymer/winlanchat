@@ -5,6 +5,7 @@ namespace WinLanChat.App.Models;
 public sealed record ProfileSettings(string DisplayName, int ListeningPort)
 {
     public string LanguageCode { get; init; } = "ru";
+    public bool CheckForUpdatesOnStartup { get; init; }
 
     public void Validate()
     {

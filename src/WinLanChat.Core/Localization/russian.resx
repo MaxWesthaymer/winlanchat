@@ -501,4 +501,32 @@
   <data name="ChooseConversation" xml:space="preserve">
     <value>Выберите, кому хотите написать</value>
   </data>
+  <data name="Updates" xml:space="preserve"><value>Обновления</value></data>
+  <data name="UpdateCurrentVersion" xml:space="preserve"><value>Установленная версия: {0}</value></data>
+  <data name="UpdateCheckOnStartup" xml:space="preserve"><value>Проверять обновления при запуске WinLanChat</value></data>
+  <data name="UpdateCheckOnStartupHint" xml:space="preserve"><value>Использует интернет для обращения к GitHub. Сохраните выбор кнопкой «Применить изменения».</value></data>
+  <data name="UpdateCheck" xml:space="preserve"><value>Проверить обновления</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>Скачать обновление</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Установить и перезапустить</value></data>
+  <data name="UpdateCancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="UpdateIdle" xml:space="preserve"><value>Обновления загружаются из GitHub Releases.</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Проверка обновлений на GitHub…</value></data>
+  <data name="UpdateUpToDate" xml:space="preserve"><value>У вас последняя версия.</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Доступна версия {0}.</value></data>
+  <data name="UpdateDownloading" xml:space="preserve"><value>Загрузка и проверка установщика…</value></data>
+  <data name="UpdateReady" xml:space="preserve"><value>Обновление проверено. Можно приступать к установке.</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>Обновление отменено. Можно повторить попытку.</value></data>
+  <data name="UpdateTimedOut" xml:space="preserve"><value>Время ожидания обновления истекло. Повторите попытку.</value></data>
+  <data name="UpdateFailed" xml:space="preserve"><value>Не удалось выполнить обновление.</value></data>
+  <data name="UpdateNoRelease" xml:space="preserve"><value>Публичный релиз не найден. Репозиторий должен быть открытым и содержать опубликованный релиз.</value></data>
+  <data name="UpdateRateLimited" xml:space="preserve"><value>GitHub отклонил запрос или достигнут лимит обращений. Повторите позже.</value></data>
+  <data name="UpdateInvalidRelease" xml:space="preserve"><value>GitHub вернул неподдерживаемые данные обновления.</value></data>
+  <data name="UpdateInstallerMissing" xml:space="preserve"><value>В этом релизе нет подходящего установщика для Windows x64.</value></data>
+  <data name="UpdateDigestMissing" xml:space="preserve"><value>У установщика нет контрольной суммы SHA-256 от GitHub. Автору релиза нужно загрузить файл повторно.</value></data>
+  <data name="UpdateIntegrityFailed" xml:space="preserve"><value>Установщик загружен не полностью или его сумма SHA-256 не совпадает. Установка заблокирована.</value></data>
+  <data name="UpdateConfirmInstall" xml:space="preserve"><value>Установить версию {0}? WinLanChat завершит работу и откроет установщик. Текущая история переписки будет потеряна. Настройки и сохранённые файлы останутся. После установки WinLanChat откроется снова.</value></data>
+  <data name="UpdateFilesPending" xml:space="preserve"><value>Перед установкой завершите или отмените передачи файлов, обработайте входящие предложения и удалите неотправленные вложения.</value></data>
+  <data name="UpdateInstalledOnly" xml:space="preserve"><value>Для обновления запустите установленную копию WinLanChat. Запуск из исходников не поддерживает обновление через установщик.</value></data>
+  <data name="UpdateLaunchFailed" xml:space="preserve"><value>Не удалось запустить установщик. WinLanChat продолжит работу.</value></data>
+  <data name="UpdateNetworkFailed" xml:space="preserve"><value>Не удалось связаться с GitHub или скачать обновление. Проверьте интернет-соединение и повторите попытку.</value></data>
 </root>

@@ -12,6 +12,7 @@ using WinLanChat.App.Services;
 using WinLanChat.Core.Models;
 using WinLanChat.Core.Networking;
 using WinLanChat.Core.Localization;
+using WinLanChat.Core.Updates;
 
 namespace WinLanChat.App.ViewModels;
 
@@ -23,6 +24,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly IWindowsStartupService? _startupService;
     private bool _startupLoaded;
     private bool _startWithWindows;
+    private bool _checkForUpdatesOnStartup;
     private readonly Dictionary<Guid, FileAttachmentViewModel> _attachments = [];
     private readonly HashSet<Task> _fileTasks = [];
     private bool _isAttachingFiles;
@@ -55,12 +57,15 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private int _conversation;
 
     public MainViewModel(Dispatcher dispatcher, ProfileSettingsStore? settingsStore = null, IFileDialogs? fileDialogs = null,
-        IWindowsStartupService? startupService = null)
+        IWindowsStartupService? startupService = null, IAppUpdateService? updateService = null,
+        IUpdateInteraction? updateInteraction = null)
     {
         _dispatcher = dispatcher;
         _settingsStore = settingsStore;
         _fileDialogs = fileDialogs ?? new FileDialogs();
         _startupService = startupService;
+        Updates = new UpdateViewModel(updateService ?? new GitHubUpdateService(), updateInteraction ?? new UpdateInteraction(),
+            () => _attachments.Count > 0 || _fileTasks.Count > 0 || _isAttachingFiles || HasDraftAttachment);
         PeersView = CollectionViewSource.GetDefaultView(Peers);
         PeersView.Filter = item => item is DiscoveredPeer peer &&
             (peer.Name.Contains(PeerSearch.Trim(), StringComparison.CurrentCultureIgnoreCase)
@@ -117,6 +122,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public AsyncCommand ApplyProfileCommand { get; }
     public RelayCommand ResetProfileCommand { get; }
     public AsyncCommand ToggleWindowsStartupCommand { get; }
+    public UpdateViewModel Updates { get; }
+    public bool CheckForUpdatesOnStartup
+    {
+        get => _checkForUpdatesOnStartup;
+        set { if (Set(ref _checkForUpdatesOnStartup, value)) RefreshProfile(); }
+    }
     public bool StartWithWindows
     {
         get => _startWithWindows;
@@ -134,7 +145,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         || DisplayName.Trim() != _activeProfile.DisplayName
         || !int.TryParse(LocalPort, out int port) || port != _activeProfile.ListeningPort;
     public bool HasProfileChanges => _settingsNeedSave || HasNetworkProfileChanges
-        || SelectedLanguageCode != _activeProfile?.LanguageCode;
+        || SelectedLanguageCode != _activeProfile?.LanguageCode
+        || CheckForUpdatesOnStartup != (_activeProfile?.CheckForUpdatesOnStartup ?? false);
     public string ProfileHint => _isStarting ? Strings.ApplyingSettings
         : HasNetworkProfileChanges && (IsConnected || IsConnecting) ? Strings.DisconnectToApplySettings
         : HasProfileChanges ? Strings.UnappliedSettingsHint
@@ -276,6 +288,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                         DisplayName = settings.DisplayName;
                         LocalPort = settings.ListeningPort.ToString();
                         SelectedLanguageCode = settings.LanguageCode;
+                        CheckForUpdatesOnStartup = settings.CheckForUpdatesOnStartup;
                     }
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
@@ -299,7 +312,11 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 _startupLoaded = true;
                 ToggleWindowsStartupCommand.Refresh();
             }
-            await StartAsync(new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort)) { LanguageCode = SelectedLanguageCode });
+            await StartAsync(new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort))
+            {
+                LanguageCode = SelectedLanguageCode,
+                CheckForUpdatesOnStartup = CheckForUpdatesOnStartup
+            });
             if (loadError is not null)
                 ErrorMessage = loadError;
         }
@@ -375,11 +392,16 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         DisplayName = profile.DisplayName;
         LocalPort = profile.ListeningPort.ToString();
         SelectedLanguageCode = profile.LanguageCode;
+        CheckForUpdatesOnStartup = profile.CheckForUpdatesOnStartup;
     }
 
     private async Task ApplyProfileAsync()
     {
-        var requested = new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort)) { LanguageCode = SelectedLanguageCode };
+        var requested = new ProfileSettings(DisplayName.Trim(), ParsePort(LocalPort))
+        {
+            LanguageCode = SelectedLanguageCode,
+            CheckForUpdatesOnStartup = CheckForUpdatesOnStartup
+        };
         requested.Validate(); // Invalid drafts must leave the running listener intact.
         ProfileSettings? previous = IsListening ? _activeProfile : null;
         SetStarting(true);
@@ -824,6 +846,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _closed = true;
         Strings.LanguageChanged -= RefreshLocalization;
         _lifetime.Cancel();
+        await Updates.DisposeAsync();
         await StopNetworkingAsync();
         await Task.WhenAll(_fileTasks.ToArray());
     }

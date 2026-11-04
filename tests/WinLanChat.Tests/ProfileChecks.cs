@@ -19,7 +19,7 @@ internal static class ProfileChecks
         {
             if (await store.LoadAsync() is not null)
                 throw new Exception("A missing settings file did not use defaults.");
-            var settings = new ProfileSettings("Рабочий компьютер 👋", 45833);
+            var settings = new ProfileSettings("Рабочий компьютер 👋", 45833) { CheckForUpdatesOnStartup = true };
             await store.SaveAsync(settings);
             if (await store.LoadAsync() != settings)
                 throw new Exception("Settings were not preserved across store instances.");
@@ -39,6 +39,8 @@ internal static class ProfileChecks
             await File.WriteAllTextAsync(path, "{\"DisplayName\":\"Legacy profile\",\"ListeningPort\":45832}");
             if ((await store.LoadAsync())?.LanguageCode != "ru")
                 throw new Exception("Existing profiles did not keep Russian as the default language.");
+            if ((await store.LoadAsync())?.CheckForUpdatesOnStartup != false)
+                throw new Exception("Legacy profiles enabled internet update checks without consent.");
             foreach (string invalid in new[] { "{invalid json", "null", "{\"DisplayName\":null,\"ListeningPort\":45832}",
                 "{\"DisplayName\":\"Name\",\"ListeningPort\":45832,\"LanguageCode\":\"de\"}",
                 "{\"DisplayName\":\"Name\",\"ListeningPort\":45832,\"LanguageCode\":null}",

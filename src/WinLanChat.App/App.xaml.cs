@@ -24,6 +24,7 @@ public partial class App : Application
         var window = new MainWindow { DataContext = viewModel };
         MainWindow = window;
         SystemTray = new SystemTrayService(window, viewModel);
+        viewModel.Updates.InstallationStarted += () => SystemTray.RequestExit();
         _singleInstance.ListenForActivation(() =>
             Dispatcher.InvokeAsync(() => SystemTray?.RestoreWindow()));
         window.Closed += async (_, _) =>
@@ -33,6 +34,8 @@ public partial class App : Application
         };
         window.Show();
         await viewModel.InitializeAsync();
+        if (viewModel.CheckForUpdatesOnStartup)
+            await viewModel.Updates.CheckAsync();
     }
 
     protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
